@@ -240,7 +240,7 @@ function adminLogin() {
     document.getElementById('adminDashboard').classList.remove('hidden');
     renderAdminDashboard();
   } else {
-    alert('❌ Invalid credentials.\n\nHint: admin / prithivi2026');
+    alert('❌ Invalid credentials.');
   }
 }
 
