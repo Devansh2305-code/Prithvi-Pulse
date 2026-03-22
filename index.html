@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prithivi Pulse – Environment Club | K.R. Mangalam University</title>
+  <meta name="description" content="Prithivi Pulse is an inter-university environment event organized by the Environment Club of K.R. Mangalam University featuring Debate, Nature Photography, and Poster Making competitions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- ───────── NAVBAR ───────── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="nav-logo">🌿</div>
+        <div>
+          <span class="nav-title">Prithivi Pulse</span>
+          <span class="nav-sub">Environment Club · KRMU</span>
+        </div>
+      </div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">About</a></li>
+        <li><a href="#guest">Chief Guest</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#register">Register</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#admin" class="btn-admin" id="adminNavBtn">Admin</a></li>
+      </ul>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ───────── HERO ───────── -->
+  <section class="hero" id="home">
+    <div class="hero-particles" id="heroParticles"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🌱 Environment Club Presents</div>
+      <h1 class="hero-title">Prithivi<br /><em>Pulse</em></h1>
+      <p class="hero-subtitle">Where Nature Meets Expression</p>
+      <p class="hero-desc">
+        K.R. Mangalam University invites you to celebrate the Earth through creativity, knowledge, and passion.
+        Compete. Inspire. Conserve.
+      </p>
+      <div class="hero-cta">
+        <a href="#register" class="btn-primary">Register Now</a>
+        <a href="#events" class="btn-outline">Explore Events</a>
+      </div>
+      <div class="hero-date-badge">
+        <span class="date-icon">📅</span>
+        <span>K.R. Mangalam University, Gurugram</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-circle hero-circle-1"></div>
+      <div class="hero-circle hero-circle-2"></div>
+      <div class="hero-circle hero-circle-3"></div>
+      <div class="floating-leaves" id="floatingLeaves"></div>
+    </div>
+    <div class="hero-scroll-hint">
+      <div class="scroll-dot"></div>
+      <span>Scroll to explore</span>
+    </div>
+  </section>
+
+  <!-- ───────── ABOUT ───────── -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="section-tag">About the Event</div>
+      <h2 class="section-title">A Celebration of <em>Nature</em></h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>
+            <strong>Prithivi Pulse</strong> is an annual inter-event initiative by the <strong>Environment Club of K.R. Mangalam University</strong>, dedicated to fostering environmental awareness and creative expression among students.
+          </p>
+          <p>
+            We believe the pulse of the Earth — <em>Prithivi</em> — beats through every one of us. This event is a call to listen, to act, and to express that connection through intellect, art, and photography.
+          </p>
+          <div class="about-stats">
+            <div class="stat-card">
+              <span class="stat-number">3</span>
+              <span class="stat-label">Events</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number">∞</span>
+              <span class="stat-label">Creativity</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number">1</span>
+              <span class="stat-label">Planet</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual">
+          <div class="about-card-stack">
+            <div class="about-card ac-1">
+              <span>🌍</span>
+              <p>Organized by Environment Club, KRMU</p>
+            </div>
+            <div class="about-card ac-2">
+              <span>🏆</span>
+              <p>Individual Participation – All events</p>
+            </div>
+            <div class="about-card ac-3">
+              <span>🆓</span>
+              <p>Open to all University Students</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── CHIEF GUEST ───────── -->
+  <section class="guest-section" id="guest">
+    <div class="container">
+      <div class="section-tag">Distinguished Guest</div>
+      <h2 class="section-title">Our Chief <em>Guest</em></h2>
+      <div class="guest-card">
+        <div class="guest-photo-wrap">
+          <!-- ╔══════════════════════════════════════╗
+               ║  PLACEHOLDER – Replace with actual  ║
+               ║  chief guest photo                  ║
+               ║  Recommended size: 400×400 px       ║
+               ╚══════════════════════════════════════╝ -->
+          <img
+            src="chief_guest.png"
+            alt="Chief Guest Photo – Placeholder"
+            class="guest-photo"
+            id="chiefGuestPhoto"
+          />
+          <div class="guest-badge">Chief Guest</div>
+        </div>
+        <div class="guest-info">
+          <!-- ✏️ PLACEHOLDER: Replace name below -->
+          <h3 class="guest-name" id="chiefGuestName">Dr. [Chief Guest Name]</h3>
+          <!-- ✏️ PLACEHOLDER: Replace designation below -->
+          <p class="guest-title" id="chiefGuestTitle">Professor &amp; Environmentalist · [Institution Name]</p>
+          <div class="guest-divider"></div>
+          <!-- ✏️ PLACEHOLDER: Replace bio paragraph(s) below -->
+          <p class="guest-bio" id="chiefGuestBio">
+            [Chief Guest Bio – Add a brief introduction about the guest here. Include their area of expertise,
+            notable achievements, contributions to environmental conservation, awards, and why they inspire
+            the next generation of eco-conscious leaders. Recommended length: 3–4 sentences.]
+          </p>
+          <div class="guest-highlights">
+            <!-- ✏️ PLACEHOLDER: Replace highlight details -->
+            <div class="guest-highlight-item">
+              <span class="ghi-icon">🎓</span>
+              <div>
+                <strong>[Qualification]</strong>
+                <span>[e.g. Ph.D. in Environmental Science]</span>
+              </div>
+            </div>
+            <div class="guest-highlight-item">
+              <span class="ghi-icon">🏛️</span>
+              <div>
+                <strong>[Institution / Org]</strong>
+                <span>[e.g. IIT Delhi / WWF India]</span>
+              </div>
+            </div>
+            <div class="guest-highlight-item">
+              <span class="ghi-icon">🌿</span>
+              <div>
+                <strong>[Key Specialization]</strong>
+                <span>[e.g. Climate Policy &amp; Sustainable Development]</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── EVENTS ───────── -->
+  <section class="events-section" id="events">
+    <div class="container">
+      <div class="section-tag">Sub Events</div>
+      <h2 class="section-title">Three Ways to <em>Participate</em></h2>
+      <p class="section-desc">Choose your arena of expression. All competitions are open to individual participants.</p>
+      <div class="events-grid">
+
+        <div class="event-card" id="eventDebate">
+          <div class="event-icon-wrap ei-debate">
+            <span class="event-icon">🎙️</span>
+          </div>
+          <h3>Debate Competition</h3>
+          <p>Voice your perspective on critical environmental topics. Defend or challenge — let your arguments echo the need for change.</p>
+          <ul class="event-rules">
+            <li>📌 Individual participation</li>
+            <li>📌 Choose your stance: For or Against the topic</li>
+            <li>📌 Topic will be shared on the day of the event</li>
+          </ul>
+          <a href="#register" class="btn-event" onclick="selectEvent('debate')">Register for Debate</a>
+        </div>
+
+        <div class="event-card" id="eventPhoto">
+          <div class="event-icon-wrap ei-photo">
+            <span class="event-icon">📷</span>
+          </div>
+          <h3>Nature Photography</h3>
+          <p>Capture the raw beauty of the natural world through your lens. Tell stories without words — let nature speak.</p>
+          <ul class="event-rules">
+            <li>📌 Individual participation</li>
+            <li>📌 Submit your best nature photograph</li>
+            <li>📌 Original, unmanipulated shots preferred</li>
+          </ul>
+          <a href="#register" class="btn-event" onclick="selectEvent('photography')">Register for Photography</a>
+        </div>
+
+        <div class="event-card" id="eventPoster">
+          <div class="event-icon-wrap ei-poster">
+            <span class="event-icon">🖼️</span>
+          </div>
+          <h3>Poster Making</h3>
+          <p>Design a compelling poster that communicates an environmental message. Art has the power to move hearts and change minds.</p>
+          <ul class="event-rules">
+            <li>📌 Individual participation</li>
+            <li>📌 Theme: Environment & Sustainability</li>
+            <li>📌 Materials will be provided on-site</li>
+          </ul>
+          <a href="#register" class="btn-event" onclick="selectEvent('poster')">Register for Poster Making</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── REGISTRATION ───────── -->
+  <section class="register-section" id="register">
+    <div class="container">
+      <div class="section-tag">Registration</div>
+      <h2 class="section-title">Join the <em>Movement</em></h2>
+      <p class="section-desc">Fill in your details below and secure your spot at Prithivi Pulse.</p>
+
+      <!-- Event Selector Tabs -->
+      <div class="event-tabs">
+        <button class="event-tab active" id="tab-debate" onclick="switchTab('debate')">🎙️ Debate</button>
+        <button class="event-tab" id="tab-photography" onclick="switchTab('photography')">📷 Nature Photography</button>
+        <button class="event-tab" id="tab-poster" onclick="switchTab('poster')">🖼️ Poster Making</button>
+      </div>
+
+      <!-- DEBATE FORM -->
+      <div class="reg-form-wrap active" id="form-debate">
+        <form class="reg-form" id="debateForm" onsubmit="handleSubmit(event, 'debate')">
+          <div class="form-header fh-debate">
+            <span>🎙️</span>
+            <div>
+              <h3>Debate Competition</h3>
+              <p>Complete the form to register for the debate</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="d-name">Full Name <span class="req">*</span></label>
+              <input type="text" id="d-name" placeholder="Enter your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="d-contact">Contact Number <span class="req">*</span></label>
+              <input type="tel" id="d-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
+            </div>
+            <div class="form-group">
+              <label for="d-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="d-email" placeholder="yourname@email.com" required />
+            </div>
+            <div class="form-group">
+              <label for="d-university">University / College <span class="req">*</span></label>
+              <input type="text" id="d-university" placeholder="Name of your institution" required />
+            </div>
+            <div class="form-group">
+              <label for="d-rollno">Roll Number <span class="req">*</span></label>
+              <input type="text" id="d-rollno" placeholder="Your enrollment / roll number" required />
+            </div>
+            <div class="form-group">
+              <label for="d-stance">Debate Stance <span class="req">*</span></label>
+              <select id="d-stance" required>
+                <option value="" disabled selected>Choose your stance</option>
+                <option value="For the Topic">✅ In Favour of the Topic</option>
+                <option value="Against the Topic">❌ Against the Topic</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label for="d-experience">Debate Experience</label>
+              <input type="text" id="d-experience" placeholder="e.g. School level, inter-college, none – optional" />
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Register for Debate 🎙️</button>
+        </form>
+      </div>
+
+      <!-- PHOTOGRAPHY FORM -->
+      <div class="reg-form-wrap" id="form-photography">
+        <form class="reg-form" id="photoForm" onsubmit="handleSubmit(event, 'photography')">
+          <div class="form-header fh-photo">
+            <span>📷</span>
+            <div>
+              <h3>Nature Photography</h3>
+              <p>Complete the form to register for photography</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="p-name">Full Name <span class="req">*</span></label>
+              <input type="text" id="p-name" placeholder="Enter your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="p-contact">Contact Number <span class="req">*</span></label>
+              <input type="tel" id="p-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
+            </div>
+            <div class="form-group">
+              <label for="p-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="p-email" placeholder="yourname@email.com" required />
+            </div>
+            <div class="form-group">
+              <label for="p-university">University / College <span class="req">*</span></label>
+              <input type="text" id="p-university" placeholder="Name of your institution" required />
+            </div>
+            <div class="form-group">
+              <label for="p-rollno">Roll Number <span class="req">*</span></label>
+              <input type="text" id="p-rollno" placeholder="Your enrollment / roll number" required />
+            </div>
+
+            <div class="form-group">
+              <label for="p-theme">Preferred Photography Theme</label>
+              <select id="p-theme">
+                <option value="" disabled selected>Select a theme (optional)</option>
+                <option value="Wildlife">Wildlife</option>
+                <option value="Flora">Flora &amp; Plants</option>
+                <option value="Landscapes">Landscapes</option>
+                <option value="Macro">Macro Nature</option>
+                <option value="Water Bodies">Water Bodies</option>
+                <option value="Sky & Clouds">Sky &amp; Clouds</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="p-experience">Photography Experience</label>
+              <input type="text" id="p-experience" placeholder="e.g. Hobbyist, 2 years, none – optional" />
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Register for Photography 📷</button>
+        </form>
+      </div>
+
+      <!-- POSTER MAKING FORM -->
+      <div class="reg-form-wrap" id="form-poster">
+        <form class="reg-form" id="posterForm" onsubmit="handleSubmit(event, 'poster')">
+          <div class="form-header fh-poster">
+            <span>🖼️</span>
+            <div>
+              <h3>Poster Making</h3>
+              <p>Complete the form to register for poster making</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pm-name">Full Name <span class="req">*</span></label>
+              <input type="text" id="pm-name" placeholder="Enter your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="pm-contact">Contact Number <span class="req">*</span></label>
+              <input type="tel" id="pm-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
+            </div>
+            <div class="form-group">
+              <label for="pm-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="pm-email" placeholder="yourname@email.com" required />
+            </div>
+            <div class="form-group">
+              <label for="pm-university">University / College <span class="req">*</span></label>
+              <input type="text" id="pm-university" placeholder="Name of your institution" required />
+            </div>
+            <div class="form-group">
+              <label for="pm-rollno">Roll Number <span class="req">*</span></label>
+              <input type="text" id="pm-rollno" placeholder="Your enrollment / roll number" required />
+            </div>
+            <div class="form-group">
+              <label for="pm-medium">Preferred Medium <span class="req">*</span></label>
+              <select id="pm-medium" required>
+                <option value="" disabled selected>Select medium</option>
+                <option value="Watercolour">Watercolour</option>
+                <option value="Acrylic">Acrylic Paint</option>
+                <option value="Sketch / Pencil">Sketch / Pencil</option>
+                <option value="Ink & Pen">Ink &amp; Pen</option>
+                <option value="Mixed Media">Mixed Media</option>
+                <option value="Digital">Digital Art</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pm-concept">Poster Concept / Message</label>
+              <input type="text" id="pm-concept" placeholder="Brief idea of your poster – optional" />
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Register for Poster Making 🖼️</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── CONTACT ───────── -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="section-tag">Get in Touch</div>
+      <h2 class="section-title">Contact <em>Us</em></h2>
+      <p class="section-desc">Reach out for any queries regarding Prithivi Pulse or the sub-events.</p>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-icon">🏛️</div>
+          <h4>Organizer</h4>
+          <p>Environment Club</p>
+          <p><strong>K.R. Mangalam University</strong></p>
+          <p>Sohna Road, Gurugram, Haryana – 122103</p>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">📧</div>
+          <h4>Email Us</h4>
+          <p><a href="mailto:environmentclub@krmangalam.edu.in">environmentclub@krmangalam.edu.in</a></p>
+          <p><a href="mailto:events@krmangalam.edu.in">events@krmangalam.edu.in</a></p>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">📞</div>
+          <h4>Call Us</h4>
+          <p>+91-0124-290 5054</p>
+          <p>+91 98765 43210 (Event Helpdesk)</p>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">🌐</div>
+          <h4>Follow Us</h4>
+          <p><a href="https://www.krmangalam.edu.in" target="_blank">www.krmangalam.edu.in</a></p>
+          <p>@KRMU_EnvClub on Instagram</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── FOOTER ───────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">🌿</span>
+        <div>
+          <p class="footer-title">Prithivi Pulse</p>
+          <p class="footer-sub">Environment Club · K.R. Mangalam University</p>
+        </div>
+      </div>
+      <p class="footer-copy">© 2026 Prithivi Pulse. Made with ❤️ for the Planet.</p>
+    </div>
+  </footer>
+
+  <!-- ───────── SUCCESS MODAL ───────── -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-box">
+      <div class="modal-anim">🌿</div>
+      <h3 id="modalTitle">Registration Successful!</h3>
+      <p id="modalMsg">Thank you for registering. We'll be in touch soon!</p>
+      <button class="btn-primary" onclick="closeModal()">Great, Thanks!</button>
+    </div>
+  </div>
+
+  <!-- ───────── ADMIN SECTION ───────── -->
+  <section class="admin-section" id="admin">
+    <div class="container">
+      <!-- Admin Login -->
+      <div id="adminLogin">
+        <div class="section-tag">Admin Access</div>
+        <h2 class="section-title">Admin <em>Dashboard</em></h2>
+        <div class="admin-login-box">
+          <div class="admin-login-icon">🔐</div>
+          <h3>Secure Admin Login</h3>
+          <p>Enter credentials to view event registrations</p>
+          <div class="form-group">
+            <label for="admin-user">Username</label>
+            <input type="text" id="admin-user" placeholder="Admin username" />
+          </div>
+          <div class="form-group">
+            <label for="admin-pass">Password</label>
+            <input type="password" id="admin-pass" placeholder="Admin password" />
+          </div>
+          <button class="btn-submit" onclick="adminLogin()">Login to Dashboard</button>
+          <p class="admin-hint">Default: admin / prithivi2026</p>
+        </div>
+      </div>
+
+      <!-- Admin Dashboard (hidden until login) -->
+      <div id="adminDashboard" class="hidden">
+        <div class="admin-dash-header">
+          <div>
+            <div class="section-tag">Event Dashboard</div>
+            <h2 class="section-title">Prithivi Pulse <em>Registrations</em></h2>
+          </div>
+          <button class="btn-outline" onclick="adminLogout()">Logout</button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="admin-summary" id="adminSummary"></div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" id="atab-debate" onclick="switchAdminTab('debate')">🎙️ Debate</button>
+          <button class="admin-tab" id="atab-photography" onclick="switchAdminTab('photography')">📷 Photography</button>
+          <button class="admin-tab" id="atab-poster" onclick="switchAdminTab('poster')">🖼️ Poster Making</button>
+        </div>
+
+        <!-- Tables -->
+        <div id="admin-table-debate" class="admin-table-wrap"></div>
+        <div id="admin-table-photography" class="admin-table-wrap hidden"></div>
+        <div id="admin-table-poster" class="admin-table-wrap hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
