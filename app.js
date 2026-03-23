@@ -141,15 +141,27 @@ function togglePartnerFields(radio) {
 /* ════════════════════════════════════════════
    PAYMENT SCREENSHOT HANDLER
 ════════════════════════════════════════════ */
-function handlePaymentScreenshot(input) {
-  const file = input.files[0];
-  const previewWrap = document.getElementById('screenshotPreviewWrap');
-  const previewImg  = document.getElementById('screenshotPreview');
-  const statusBox   = document.getElementById('paymentStatus');
+const PAYMENT_INPUT_IDS = {
+  debate:      'd-payment-screenshot',
+  photography: 'p-payment-screenshot',
+  poster:      'pm-payment-screenshot',
+};
+const PAYMENT_PREFIX = { debate: 'd', photography: 'p', poster: 'pm' };
+
+function handlePaymentScreenshot(input, eventType) {
+  const prefix      = PAYMENT_PREFIX[eventType] || 'pm';
+  const file        = input.files[0];
+  const previewWrap = document.getElementById(`${prefix}-screenshotPreviewWrap`);
+  const previewImg  = document.getElementById(`${prefix}-screenshotPreview`);
+  const statusBox   = document.getElementById(`${prefix}-paymentStatus`);
+  const hint        = document.getElementById(`${prefix}-paymentHint`);
+  const submitBtn   = document.getElementById(`${eventType}Form`)?.querySelector('.btn-submit')
+                   || document.getElementById(`${ eventType === 'debate' ? 'debateForm' : eventType === 'photography' ? 'photoForm' : 'posterForm' }`)?.querySelector('.btn-submit');
 
   if (!file) {
-    previewWrap.classList.add('hidden');
-    statusBox.classList.add('hidden');
+    previewWrap?.classList.add('hidden');
+    statusBox?.classList.add('hidden');
+    if (hint) hint.style.display = '';
     return;
   }
 
@@ -167,11 +179,10 @@ function handlePaymentScreenshot(input) {
   reader.onload = (e) => {
     previewImg.src = e.target.result;
     previewWrap.classList.remove('hidden');
-
-    // Show pending status
     statusBox.classList.remove('hidden');
     statusBox.className = 'payment-status payment-status--pending';
-    statusBox.innerHTML = '⏳ Screenshot uploaded. Admin will verify payment before confirmation.';
+    statusBox.innerHTML = '⏳ Screenshot uploaded — Admin will verify before confirming your registration.';
+    if (hint) hint.style.display = 'none';  // Hide the warning once uploaded
   };
   reader.readAsDataURL(file);
 }
@@ -181,6 +192,22 @@ function handlePaymentScreenshot(input) {
 ════════════════════════════════════════════ */
 async function handleSubmit(e, eventType) {
   e.preventDefault();
+
+  // —— Payment gate: block if no screenshot uploaded ——
+  const screenshotInput = document.getElementById(PAYMENT_INPUT_IDS[eventType]);
+  if (!screenshotInput || screenshotInput.files.length === 0) {
+    const prefix  = PAYMENT_PREFIX[eventType] || 'pm';
+    const hint    = document.getElementById(`${prefix}-paymentHint`);
+    const paySection = hint?.closest('.payment-section');
+    if (hint) { hint.style.color = '#b91c1c'; hint.style.fontWeight = '700'; }
+    if (paySection) {
+      paySection.style.border = '2px solid #f87171';
+      paySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => { paySection.style.border = ''; }, 2500);
+    }
+    return;
+  }
+
   const btn = e.target.querySelector('.btn-submit');
   btn.disabled = true;
   btn.textContent = 'Submitting…';
@@ -216,25 +243,26 @@ function buildRegistrationData(eventType) {
   const ts = new Date().toISOString();
   if (eventType === 'debate') {
     return {
-      name:        cleanVal('d-name'),
-      contact:     cleanVal('d-contact'),
-      email:       cleanVal('d-email'),
-      university:  cleanVal('d-university'),
-      roll_no:     cleanVal('d-rollno'),
-      stance:      cleanVal('d-stance'),
-      experience:  cleanVal('d-experience') || null,
+      name:             cleanVal('d-name'),
+      contact:          cleanVal('d-contact'),
+      email:            cleanVal('d-email'),
+      university:       cleanVal('d-university'),
+      roll_no:          cleanVal('d-rollno'),
+      stance:           cleanVal('d-stance'),
+      experience:       cleanVal('d-experience') || null,
+      payment_uploaded: document.getElementById('d-payment-screenshot')?.files?.length > 0,
     };
   }
   if (eventType === 'photography') {
     return {
-      name:        cleanVal('p-name'),
-      contact:     cleanVal('p-contact'),
-      email:       cleanVal('p-email'),
-      university:  cleanVal('p-university'),
-      roll_no:     cleanVal('p-rollno'),
-      camera:      cleanVal('p-camera'),
-      theme:       cleanVal('p-theme') || null,
-      experience:  cleanVal('p-experience') || null,
+      name:             cleanVal('p-name'),
+      contact:          cleanVal('p-contact'),
+      email:            cleanVal('p-email'),
+      university:       cleanVal('p-university'),
+      roll_no:          cleanVal('p-rollno'),
+      theme:            cleanVal('p-theme') || null,
+      experience:       cleanVal('p-experience') || null,
+      payment_uploaded: document.getElementById('p-payment-screenshot')?.files?.length > 0,
     };
   }
   if (eventType === 'poster') {
@@ -396,7 +424,7 @@ function buildDebateTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Stance</th><th>Experience</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Stance</th><th>Experience</th><th>Payment</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -408,6 +436,7 @@ function buildDebateTable(rows) {
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${stanceBadge(r.stance)}</td>
         <td>${esc(r.experience)}</td>
+        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>
@@ -419,7 +448,7 @@ function buildPhotoTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Device</th><th>Theme</th><th>Experience</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Payment</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -429,9 +458,9 @@ function buildPhotoTable(rows) {
         <td>${esc(r.email)}</td>
         <td>${esc(r.university)}</td>
         <td>${esc(r.roll_no || r.rollNo)}</td>
-        <td>${esc(r.camera)}</td>
         <td>${esc(r.theme)}</td>
         <td>${esc(r.experience)}</td>
+        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -258,6 +258,16 @@
               <p>Complete the form to register for the debate</p>
             </div>
           </div>
+
+          <!-- Fee Notice -->
+          <div class="fee-notice">
+            <span class="fee-icon">💰</span>
+            <div>
+              <strong>Registration Fee: ₹50 per participant</strong>
+              <span>Pay via UPI QR code below after filling the form</span>
+            </div>
+          </div>
+
           <div class="form-grid">
             <div class="form-group">
               <label for="d-name">Full Name <span class="req">*</span></label>
@@ -294,6 +304,40 @@
           </div>
           <button type="submit" class="btn-submit">Register for Debate 🎙️</button>
         </form>
+
+        <!-- Payment Section -->
+        <div class="payment-section">
+          <div class="payment-section-title">
+            <span>💳</span>
+            <div>
+              <h4>Complete Your Payment</h4>
+              <p>Scan the QR code &amp; pay ₹50 to confirm registration</p>
+            </div>
+          </div>
+          <div class="payment-body">
+            <div class="qr-wrap">
+              <img src="payment_qr.png" alt="Payment QR Code" class="qr-image" />
+              <div class="qr-amount">₹50 — Debate Registration</div>
+              <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
+              <div class="qr-name">Devansh Jain (Paytm UPI)</div>
+            </div>
+            <div class="screenshot-wrap">
+              <label class="screenshot-label" for="d-payment-screenshot">
+                <span class="screenshot-icon">📤</span>
+                <strong>Upload Payment Screenshot</strong>
+                <span>JPG / PNG — max 5 MB</span>
+                <input type="file" id="d-payment-screenshot" accept="image/*" onchange="handlePaymentScreenshot(this, 'debate')" />
+              </label>
+              <div class="screenshot-preview-wrap hidden" id="d-screenshotPreviewWrap">
+                <img id="d-screenshotPreview" src="" alt="Payment screenshot preview" />
+              </div>
+              <div class="payment-status hidden" id="d-paymentStatus"></div>
+              <div class="payment-required-hint" id="d-paymentHint">
+                ⚠️ Upload payment screenshot to enable submission
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- PHOTOGRAPHY FORM -->
