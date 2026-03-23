@@ -119,6 +119,64 @@ function selectEvent(event) {
 }
 
 /* ════════════════════════════════════════════
+   POSTER – Solo / Duo toggle
+════════════════════════════════════════════ */
+function togglePartnerFields(radio) {
+  const partnerFields = document.getElementById('partnerFields');
+  const partnerNameInput   = document.getElementById('pm-partner-name');
+  const partnerRollInput   = document.getElementById('pm-partner-rollno');
+  if (radio.value === 'Duo') {
+    partnerFields.classList.remove('hidden');
+    partnerNameInput.required = true;
+    partnerRollInput.required = true;
+  } else {
+    partnerFields.classList.add('hidden');
+    partnerNameInput.required = false;
+    partnerRollInput.required = false;
+    partnerNameInput.value = '';
+    partnerRollInput.value = '';
+  }
+}
+
+/* ════════════════════════════════════════════
+   PAYMENT SCREENSHOT HANDLER
+════════════════════════════════════════════ */
+function handlePaymentScreenshot(input) {
+  const file = input.files[0];
+  const previewWrap = document.getElementById('screenshotPreviewWrap');
+  const previewImg  = document.getElementById('screenshotPreview');
+  const statusBox   = document.getElementById('paymentStatus');
+
+  if (!file) {
+    previewWrap.classList.add('hidden');
+    statusBox.classList.add('hidden');
+    return;
+  }
+
+  // Validate file size (5 MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    statusBox.classList.remove('hidden');
+    statusBox.className = 'payment-status payment-status--warn';
+    statusBox.innerHTML = '⚠️ File too large. Please upload an image under 5 MB.';
+    input.value = '';
+    return;
+  }
+
+  // Show image preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewWrap.classList.remove('hidden');
+
+    // Show pending status
+    statusBox.classList.remove('hidden');
+    statusBox.className = 'payment-status payment-status--pending';
+    statusBox.innerHTML = '⏳ Screenshot uploaded. Admin will verify payment before confirmation.';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ════════════════════════════════════════════
    FORM SUBMISSION  →  Supabase INSERT
 ════════════════════════════════════════════ */
 async function handleSubmit(e, eventType) {
@@ -180,14 +238,21 @@ function buildRegistrationData(eventType) {
     };
   }
   if (eventType === 'poster') {
+    const participationType = document.querySelector('input[name="pm-participation"]:checked')?.value || 'Solo';
+    const partnerName = participationType === 'Duo' ? (cleanVal('pm-partner-name') || null) : null;
+    const partnerRollNo = participationType === 'Duo' ? (cleanVal('pm-partner-rollno') || null) : null;
     return {
-      name:        cleanVal('pm-name'),
-      contact:     cleanVal('pm-contact'),
-      email:       cleanVal('pm-email'),
-      university:  cleanVal('pm-university'),
-      roll_no:     cleanVal('pm-rollno'),
-      medium:      cleanVal('pm-medium'),
-      concept:     cleanVal('pm-concept') || null,
+      name:              cleanVal('pm-name'),
+      contact:           cleanVal('pm-contact'),
+      email:             cleanVal('pm-email'),
+      university:        cleanVal('pm-university'),
+      roll_no:           cleanVal('pm-rollno'),
+      medium:            cleanVal('pm-medium'),
+      concept:           cleanVal('pm-concept') || null,
+      participation_type: participationType,
+      partner_name:      partnerName,
+      partner_roll_no:   partnerRollNo,
+      payment_uploaded:  document.getElementById('pm-payment-screenshot')?.files?.length > 0,
     };
   }
   return null;
@@ -377,19 +442,22 @@ function buildPosterTable(rows) {
   if (!rows.length) return emptyState('No poster making registrations yet.');
   return `<table class="admin-table">
     <thead><tr>
-      <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Medium</th><th>Concept</th><th>Registered At</th>
+      <th>#</th><th>Name</th><th>Type</th><th>Partner</th><th>Contact</th><th>Email</th>
+      <th>University</th><th>Roll No.</th><th>Medium</th><th>Concept</th><th>Payment</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
         <td>${i + 1}</td>
         <td><strong>${esc(r.name)}</strong></td>
+        <td><span class="badge-stance ${r.participation_type === 'Duo' ? 'badge-duo' : 'badge-solo'}">${esc(r.participation_type) || 'Solo'}</span></td>
+        <td>${r.partner_name ? `${esc(r.partner_name)}<br><small>${esc(r.partner_roll_no)}</small>` : '—'}</td>
         <td>${esc(r.contact)}</td>
         <td>${esc(r.email)}</td>
         <td>${esc(r.university)}</td>
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${esc(r.medium)}</td>
         <td>${esc(r.concept)}</td>
+        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>

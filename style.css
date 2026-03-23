@@ -574,8 +574,156 @@ a { text-decoration: none; color: inherit; }
 .badge-stance {
   display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: .78rem; font-weight: 600;
 }
-.badge-for { background: #d4f7e2; color: var(--green-700); }
+.badge-for     { background: #d4f7e2; color: var(--green-700); }
 .badge-against { background: #fee2e2; color: #b91c1c; }
+.badge-solo    { background: #e0f2fe; color: #0369a1; }
+.badge-duo     { background: #ede9fe; color: #6d28d9; }
+
+/* ────────────────────────────────────────
+   POSTER – FEE NOTICE
+──────────────────────────────────────── */
+.fee-notice {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, #fef9c3, #fef08a);
+  border: 1.5px solid #fbbf24; border-radius: var(--radius-md);
+  padding: 14px 20px; margin-bottom: 24px;
+}
+.fee-icon { font-size: 1.6rem; flex-shrink: 0; }
+.fee-notice strong { display: block; color: #92400e; font-size: .97rem; font-weight: 700; }
+.fee-notice span   { color: #a16207; font-size: .84rem; }
+
+/* ────────────────────────────────────────
+   POSTER – PARTICIPATION TOGGLE
+──────────────────────────────────────── */
+.participation-toggle {
+  margin-bottom: 24px;
+}
+.toggle-label {
+  display: block; font-weight: 600; font-size: .88rem;
+  color: var(--text-mid); margin-bottom: 10px;
+}
+.toggle-pills { display: flex; gap: 12px; }
+.pill-option {
+  display: flex; align-items: center; cursor: pointer;
+}
+.pill-option input[type="radio"] { display: none; }
+.pill-option span {
+  display: inline-block; padding: 10px 26px;
+  border-radius: 999px; font-weight: 600; font-size: .92rem;
+  border: 2px solid #dce8e0; color: var(--text-muted);
+  background: #f8fdf9; transition: var(--transition);
+  user-select: none;
+}
+.pill-option input:checked + span {
+  background: linear-gradient(135deg, var(--green-600), var(--green-500));
+  color: var(--white); border-color: var(--green-600);
+  box-shadow: 0 4px 14px rgba(58,175,106,.35);
+}
+.pill-option:hover span { border-color: var(--green-500); color: var(--green-700); }
+
+/* ────────────────────────────────────────
+   POSTER – PARTNER FIELDS BLOCK
+──────────────────────────────────────── */
+.partner-fields {
+  background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+  border: 1.5px dashed #a78bfa; border-radius: var(--radius-md);
+  padding: 20px 24px; margin-bottom: 24px;
+  animation: fadeUp .3s ease;
+}
+.partner-fields-title {
+  font-weight: 700; font-size: .95rem; color: #6d28d9; margin-bottom: 16px;
+}
+
+/* ────────────────────────────────────────
+   POSTER – PAYMENT SECTION
+──────────────────────────────────────── */
+.payment-section {
+  background: var(--white); border-radius: var(--radius-lg);
+  padding: 36px 40px; margin-top: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid rgba(58,175,106,.15);
+  max-width: 860px;
+}
+.payment-section-title {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 20px; margin-bottom: 28px;
+  border-bottom: 1.5px solid rgba(58,175,106,.1);
+}
+.payment-section-title span { font-size: 2rem; }
+.payment-section-title h4 {
+  font-size: 1.15rem; font-weight: 700; color: var(--green-900);
+}
+.payment-section-title p { font-size: .88rem; color: var(--text-muted); }
+
+.payment-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start;
+}
+
+/* QR Code */
+.qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.qr-image {
+  width: 220px; height: 220px; object-fit: contain;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--green-300);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+.qr-image:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); }
+.qr-amount {
+  font-size: 1.1rem; font-weight: 700; color: var(--green-800);
+  background: var(--green-100); padding: 6px 20px; border-radius: 999px;
+}
+.qr-upi-id {
+  font-size: .9rem; color: var(--text-mid); text-align: center;
+}
+.qr-upi-id strong { color: var(--green-700); }
+.qr-name { font-size: .82rem; color: var(--text-muted); }
+
+/* Screenshot Upload */
+.screenshot-wrap { display: flex; flex-direction: column; gap: 14px; }
+.screenshot-label {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border: 2px dashed var(--green-300); border-radius: var(--radius-md);
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  background: #f0faf4; transition: var(--transition);
+  position: relative;
+}
+.screenshot-label:hover { border-color: var(--green-500); background: #e4f7ec; }
+.screenshot-icon { font-size: 2rem; }
+.screenshot-label strong { font-weight: 700; color: var(--green-800); font-size: .95rem; }
+.screenshot-label span   { color: var(--text-muted); font-size: .82rem; }
+.screenshot-label input[type="file"] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.screenshot-preview-wrap {
+  border-radius: var(--radius-md); overflow: hidden;
+  box-shadow: var(--shadow-sm); border: 1.5px solid var(--green-300);
+}
+.screenshot-preview-wrap img {
+  width: 100%; max-height: 180px; object-fit: cover; display: block;
+}
+
+/* Payment Status */
+.payment-status {
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  font-size: .88rem; font-weight: 600;
+}
+.payment-status--pending {
+  background: #fef9c3; color: #92400e; border: 1.5px solid #fbbf24;
+}
+.payment-status--warn {
+  background: #fee2e2; color: #b91c1c; border: 1.5px solid #f87171;
+}
+.payment-status--ok {
+  background: #d4f7e2; color: var(--green-700); border: 1.5px solid var(--green-400);
+}
+
+@media (max-width: 768px) {
+  .payment-body { grid-template-columns: 1fr; gap: 24px; }
+  .payment-section { padding: 24px 20px; }
+  .toggle-pills { flex-direction: row; }
+}
 
 /* ────────────────────────────────────────
    ANIMATIONS

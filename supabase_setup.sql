@@ -82,3 +82,10 @@ CREATE POLICY "Allow public select - poster"
 --  Done! Your tables are ready.
 --  Go back to the browser and test a registration.
 -- ═══════════════════════════════════════════════
+
+-- ─── 5. POSTER TABLE – NEW COLUMNS (run once) ───
+--  Run these if your poster_registrations table already exists
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS participation_type TEXT DEFAULT 'Solo';
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_name       TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_roll_no    TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_uploaded   BOOLEAN DEFAULT false;

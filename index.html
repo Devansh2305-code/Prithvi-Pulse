@@ -222,9 +222,10 @@
           <h3>Poster Making</h3>
           <p>Design a compelling poster that communicates an environmental message. Art has the power to move hearts and change minds.</p>
           <ul class="event-rules">
-            <li>📌 Individual participation</li>
-            <li>📌 Theme: Environment & Sustainability</li>
+            <li>📌 Solo or Duo participation</li>
+            <li>📌 Theme: Environment &amp; Sustainability</li>
             <li>📌 Materials will be provided on-site</li>
+            <li>💰 Registration Fee: ₹50 per team</li>
           </ul>
           <a href="#register" class="btn-event" onclick="selectEvent('poster')">Register for Poster Making</a>
         </div>
@@ -358,6 +359,31 @@
               <p>Complete the form to register for poster making</p>
             </div>
           </div>
+
+          <!-- Fee Notice -->
+          <div class="fee-notice">
+            <span class="fee-icon">💰</span>
+            <div>
+              <strong>Registration Fee: ₹50 per team</strong>
+              <span>Pay via UPI QR code below after filling the form</span>
+            </div>
+          </div>
+
+          <!-- Participation Type -->
+          <div class="participation-toggle">
+            <label class="toggle-label">Participation Type <span class="req">*</span></label>
+            <div class="toggle-pills">
+              <label class="pill-option">
+                <input type="radio" name="pm-participation" id="pm-solo" value="Solo" checked onchange="togglePartnerFields(this)" />
+                <span>👤 Solo</span>
+              </label>
+              <label class="pill-option">
+                <input type="radio" name="pm-participation" id="pm-duo" value="Duo" onchange="togglePartnerFields(this)" />
+                <span>👥 Duo</span>
+              </label>
+            </div>
+          </div>
+
           <div class="form-grid">
             <div class="form-group">
               <label for="pm-name">Full Name <span class="req">*</span></label>
@@ -396,8 +422,55 @@
               <input type="text" id="pm-concept" placeholder="Brief idea of your poster – optional" />
             </div>
           </div>
+
+          <!-- Partner Fields (shown only for Duo) -->
+          <div class="partner-fields hidden" id="partnerFields">
+            <div class="partner-fields-title">👥 Partner Details</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="pm-partner-name">Partner's Full Name <span class="req">*</span></label>
+                <input type="text" id="pm-partner-name" placeholder="Partner's full name" />
+              </div>
+              <div class="form-group">
+                <label for="pm-partner-rollno">Partner's Roll Number <span class="req">*</span></label>
+                <input type="text" id="pm-partner-rollno" placeholder="Partner's enrollment / roll number" />
+              </div>
+            </div>
+          </div>
+
           <button type="submit" class="btn-submit">Register for Poster Making 🖼️</button>
         </form>
+
+        <!-- Payment Section -->
+        <div class="payment-section" id="posterPaymentSection">
+          <div class="payment-section-title">
+            <span>💳</span>
+            <div>
+              <h4>Complete Your Payment</h4>
+              <p>Scan the QR code &amp; pay ₹50 to confirm registration</p>
+            </div>
+          </div>
+          <div class="payment-body">
+            <div class="qr-wrap">
+              <img src="payment_qr.png" alt="Payment QR Code – Devansh Jain" class="qr-image" id="qrDisplay" />
+              <div class="qr-amount">₹50 — Poster Making Registration</div>
+              <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
+              <div class="qr-name">Devansh Jain (Paytm UPI)</div>
+            </div>
+            <div class="screenshot-wrap">
+              <label class="screenshot-label" for="pm-payment-screenshot">
+                <span class="screenshot-icon">📤</span>
+                <strong>Upload Payment Screenshot</strong>
+                <span>JPG / PNG — max 5 MB</span>
+                <input type="file" id="pm-payment-screenshot" accept="image/*" onchange="handlePaymentScreenshot(this)" />
+              </label>
+              <div class="screenshot-preview-wrap hidden" id="screenshotPreviewWrap">
+                <img id="screenshotPreview" src="" alt="Payment screenshot preview" />
+              </div>
+              <div class="payment-status hidden" id="paymentStatus"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
