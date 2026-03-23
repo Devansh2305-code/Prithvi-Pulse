@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Verification Update – Prithvi Pulse</title>
+  <style>
+    body { margin: 0; padding: 0; background: #f9f4f4; font-family: 'Segoe UI', Arial, sans-serif; color: #1f0f0f; }
+    .wrapper { max-width: 620px; margin: 32px auto; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 32px rgba(74,26,26,.12); }
+    .header { background: linear-gradient(135deg, #2b1a1a 0%, #8a2d2d 100%); padding: 36px 40px; text-align: center; }
+    .header-logo { font-size: 2.4rem; margin-bottom: 8px; }
+    .header-title { color: #ffffff; font-size: 1.5rem; font-weight: 700; margin: 0; letter-spacing: .02em; }
+    .header-sub { color: #dfa0a0; font-size: .85rem; margin: 4px 0 0; }
+    .status-badge { background: #fde8e8; border: 2px solid #e05252; border-radius: 999px; display: inline-block; padding: 8px 24px; margin: 28px auto 0; color: #7a1a1a; font-weight: 700; font-size: .95rem; }
+    .body { padding: 36px 40px; }
+    .greeting { font-size: 1.15rem; font-weight: 600; color: #7a1a1a; margin-bottom: 8px; }
+    .intro { color: #4a2c2c; font-size: .96rem; line-height: 1.65; margin-bottom: 28px; }
+    .reason-box { background: #fdf4f4; border: 1.5px solid #e05252; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; }
+    .reason-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em; color: #9a6b6b; margin-bottom: 8px; font-weight: 600; }
+    .reason-text { font-size: .95rem; color: #4a2c2c; line-height: 1.6; }
+    .section-title { font-size: 1rem; font-weight: 700; color: #7a1a1a; margin: 24px 0 12px; border-left: 4px solid #e05252; padding-left: 12px; }
+    .steps-list { list-style: none; padding: 0; margin: 0 0 24px; counter-reset: steps; }
+    .steps-list li { padding: 9px 0 9px 32px; position: relative; font-size: .93rem; color: #4a2c2c; border-bottom: 1px solid #fae8e8; counter-increment: steps; }
+    .steps-list li::before { content: counter(steps); position: absolute; left: 0; background: #e05252; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 700; top: 10px; }
+    .info-box { background: #fdf4f4; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .contact-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+    .contact-item { flex: 1; min-width: 200px; background: #fdf4f4; border-radius: 10px; padding: 14px 16px; }
+    .contact-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: #9a6b6b; font-weight: 600; margin-bottom: 4px; }
+    .contact-value { font-size: .9rem; color: #4a2c2c; font-weight: 500; }
+    .footer { background: #2b1a1a; padding: 24px 40px; text-align: center; }
+    .footer p { color: #9a6b6b; font-size: .82rem; margin: 4px 0; }
+    .footer a { color: #cc8080; text-decoration: none; }
+    @media (max-width: 620px) {
+      .body { padding: 24px 20px; }
+      .header { padding: 28px 20px; }
+      .contact-grid { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">🌿</div>
+      <h1 class="header-title">Prithivi Pulse</h1>
+      <p class="header-sub">Environment Club · K.R. Mangalam University</p>
+      <div class="status-badge">❌ Payment Verification Failed</div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <p class="greeting">Hello, {{participantName}},</p>
+      <p class="intro">
+        We regret to inform you that we were unable to verify your payment for <strong>{{eventName}}</strong>
+        at Prithivi Pulse. Please review the reason below and follow the steps to resolve this.
+      </p>
+
+      <!-- Reason -->
+      <div class="reason-box">
+        <div class="reason-title">📋 Reason for Rejection</div>
+        <div class="reason-text">{{rejectionReason}}</div>
+      </div>
+
+      <!-- Steps to resolve -->
+      <div class="section-title">🔄 How to Resolve</div>
+      <ol class="steps-list">
+        <li>Review the rejection reason mentioned above carefully.</li>
+        <li>Ensure you pay <strong>₹50</strong> to UPI ID <strong>7678695012@ptyes</strong> (Devansh Jain, Paytm UPI).</li>
+        <li>Take a clear screenshot of the payment confirmation immediately after the transaction.</li>
+        <li>Re-register using the registration form and upload the correct payment screenshot.</li>
+        <li>Alternatively, contact us directly at the email below to resolve the issue.</li>
+      </ol>
+
+      <!-- Info -->
+      <div class="info-box">
+        <p style="margin:0;font-size:.93rem;color:#4a2c2c;">
+          ⚠️ If you believe this is an error or need assistance, please contact us with your
+          <strong>registration details and transaction ID</strong> from your payment app.
+        </p>
+      </div>
+
+      <!-- Contact -->
+      <div class="section-title">📞 Contact Us</div>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <div class="contact-label">📧 Email</div>
+          <div class="contact-value">environmentclub@krmangalam.edu.in</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">📞 Phone</div>
+          <div class="contact-value">+91-0124-290 5054</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">📸 Instagram</div>
+          <div class="contact-value">@environmentclub_krmu</div>
+        </div>
+      </div>
+
+      <p style="font-size:.88rem;color:#9a6b6b;line-height:1.6;">
+        We apologize for any inconvenience caused. We're here to help you complete your registration
+        for Prithivi Pulse. Don't hesitate to reach out!
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2026 Prithivi Pulse · Environment Club · K.R. Mangalam University</p>
+      <p><a href="https://www.krmangalam.edu.in">www.krmangalam.edu.in</a></p>
+      <p style="margin-top:8px;font-size:.78rem;">This is an automated email. Please do not reply directly.</p>
+    </div>
+  </div>
+</body>
+</html>

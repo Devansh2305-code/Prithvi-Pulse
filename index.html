@@ -557,6 +557,14 @@
           <button class="admin-tab" id="atab-poster" onclick="switchAdminTab('poster')">🖼️ Poster Making</button>
         </div>
 
+        <!-- Reminder Email Buttons (per tab) -->
+        <div class="admin-reminder-bar">
+          <span class="reminder-bar-label">📧 Send Reminder Email:</span>
+          <button class="btn-reminder" id="admin-reminder-debate">🎙️ Debate Participants</button>
+          <button class="btn-reminder" id="admin-reminder-photography">📷 Photography Participants</button>
+          <button class="btn-reminder" id="admin-reminder-poster">🖼️ Poster Participants</button>
+        </div>
+
         <!-- Tables -->
         <div id="admin-table-debate" class="admin-table-wrap"></div>
         <div id="admin-table-photography" class="admin-table-wrap hidden"></div>
@@ -608,6 +616,116 @@
           </button>
           <p class="payment-note">⚠️ Your registration will be confirmed after admin verifies payment. You will receive confirmation via email.</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── ADMIN PAYMENT VERIFICATION MODAL ───────── -->
+  <div class="modal-overlay" id="adminVerifyModal">
+    <div class="modal-box avm-box">
+      <div class="avm-header">
+        <div class="avm-icon">🔍</div>
+        <div class="avm-header-text">
+          <h3>Verify Payment</h3>
+          <p id="avm-event">—</p>
+        </div>
+        <button class="payment-modal-close" onclick="closeAdminVerifyModal()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="avm-body">
+        <!-- Participant Info -->
+        <div class="avm-section-title">👤 Participant Details</div>
+        <div class="avm-details-grid">
+          <div class="avm-detail-row"><span class="avm-label">Name</span><span class="avm-value" id="avm-name">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">Email</span><span class="avm-value" id="avm-email">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">Contact</span><span class="avm-value" id="avm-contact">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">University</span><span class="avm-value" id="avm-university">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">Roll No.</span><span class="avm-value" id="avm-rollno">—</span></div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="avm-section-title">💳 Payment Details</div>
+        <div class="avm-details-grid">
+          <div class="avm-detail-row"><span class="avm-label">UPI ID Used</span><span class="avm-value" id="avm-upi">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">Payment Time</span><span class="avm-value" id="avm-timestamp">—</span></div>
+          <div class="avm-detail-row"><span class="avm-label">System Notes</span><span class="avm-value" id="avm-notes-display">—</span></div>
+        </div>
+
+        <!-- Screenshot Preview -->
+        <div class="avm-section-title">📷 Payment Screenshot</div>
+        <div id="avm-screenshot-wrap" class="avm-screenshot-wrap hidden">
+          <a id="avm-screenshot-link" href="#" target="_blank" title="Click to enlarge">
+            <img id="avm-screenshot-img" src="" alt="Payment screenshot" class="avm-screenshot-img" />
+            <span class="avm-screenshot-hint">Click to open full size</span>
+          </a>
+        </div>
+        <p id="avm-no-screenshot" class="avm-no-screenshot">No screenshot uploaded.</p>
+
+        <!-- Admin Notes -->
+        <div class="avm-section-title">📝 Admin Notes</div>
+        <textarea id="avm-admin-notes" class="avm-admin-notes"
+          placeholder="Enter reason for approval or rejection (required for rejection)…" rows="3"></textarea>
+
+        <!-- Status -->
+        <div id="avm-status" class="avm-status hidden"></div>
+
+        <!-- Actions -->
+        <div class="avm-actions">
+          <button id="avm-approve-btn" class="btn-avm-approve" onclick="submitAdminVerify(true)">
+            ✅ Approve Payment
+          </button>
+          <button id="avm-reject-btn" class="btn-avm-reject" onclick="submitAdminVerify(false)">
+            ❌ Reject Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── ADMIN REMINDER EMAIL MODAL ───────── -->
+  <div class="modal-overlay" id="reminderModal">
+    <div class="modal-box rm-box">
+      <div class="avm-header">
+        <div class="avm-icon">📧</div>
+        <div class="avm-header-text">
+          <h3>Send Reminder Email</h3>
+          <p>Event: <strong id="rm-event-name">—</strong></p>
+        </div>
+        <button class="payment-modal-close" onclick="closeReminderModal()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="avm-body">
+        <!-- Select Recipients -->
+        <div class="avm-section-title">👥 Select Recipients</div>
+        <div class="rm-select-all-row">
+          <label class="rm-select-all-label">
+            <input type="checkbox" checked onchange="toggleAllReminders(this.checked)" />
+            Select / Deselect All
+          </label>
+        </div>
+        <div id="rm-recipient-list" class="rm-recipient-list"></div>
+
+        <!-- Custom Message -->
+        <div class="avm-section-title">✏️ Email Message</div>
+        <textarea id="rm-custom-message" class="avm-admin-notes rm-message-area" rows="8"
+          placeholder="Write your custom reminder message here…"></textarea>
+
+        <!-- Status -->
+        <div id="rm-status" class="avm-status hidden"></div>
+
+        <!-- Actions -->
+        <div class="avm-actions">
+          <button id="rm-send-btn" class="btn-avm-approve" onclick="sendReminderEmails()">
+            📤 Send Reminder Emails
+          </button>
+          <button class="btn-avm-reject" onclick="closeReminderModal()">
+            Cancel
+          </button>
+        </div>
+
+        <p class="payment-note" style="margin-top:12px;">
+          ⚠️ Recipients who received a reminder within the last 24 hours are automatically disabled to prevent spam.
+        </p>
       </div>
     </div>
   </div>

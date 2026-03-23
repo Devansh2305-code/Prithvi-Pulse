@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Reminder – Prithvi Pulse</title>
+  <style>
+    body { margin: 0; padding: 0; background: #f4faf7; font-family: 'Segoe UI', Arial, sans-serif; color: #0f1f14; }
+    .wrapper { max-width: 620px; margin: 32px auto; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 32px rgba(26,74,46,.12); }
+    .header { background: linear-gradient(135deg, #1a4a2e 0%, #2d8a52 100%); padding: 36px 40px; text-align: center; }
+    .header-logo { font-size: 2.4rem; margin-bottom: 8px; }
+    .header-title { color: #ffffff; font-size: 1.5rem; font-weight: 700; margin: 0; letter-spacing: .02em; }
+    .header-sub { color: #80dfa3; font-size: .85rem; margin: 4px 0 0; }
+    .reminder-badge { background: #fff8e1; border: 2px solid #c8a044; border-radius: 999px; display: inline-block; padding: 8px 24px; margin: 28px auto 0; color: #7a5c0a; font-weight: 700; font-size: .95rem; }
+    .body { padding: 36px 40px; }
+    .greeting { font-size: 1.15rem; font-weight: 600; color: #1a4a2e; margin-bottom: 8px; }
+    .intro { color: #2c4a35; font-size: .96rem; line-height: 1.65; margin-bottom: 28px; }
+    .countdown-box { background: linear-gradient(135deg, #1a4a2e, #2d8a52); border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px; color: #fff; }
+    .countdown-label { font-size: .85rem; color: #80dfa3; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+    .countdown-event { font-size: 1.4rem; font-weight: 700; }
+    .event-detail-box { background: #f4faf7; border: 1.5px solid #56cc84; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; }
+    .detail-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid #d4f7e2; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-icon { font-size: 1.1rem; min-width: 24px; }
+    .detail-text { font-size: .93rem; color: #2c4a35; }
+    .detail-text strong { color: #1a4a2e; display: block; }
+    .section-title { font-size: 1rem; font-weight: 700; color: #1a4a2e; margin: 24px 0 12px; border-left: 4px solid #3aaf6a; padding-left: 12px; }
+    .info-list { list-style: none; padding: 0; margin: 0 0 24px; }
+    .info-list li { padding: 7px 0 7px 28px; position: relative; font-size: .93rem; color: #2c4a35; border-bottom: 1px solid #f0f7f3; }
+    .info-list li::before { content: '📌'; position: absolute; left: 0; }
+    .custom-msg-box { background: #fffde7; border-left: 4px solid #c8a044; border-radius: 0 10px 10px 0; padding: 16px 20px; margin-bottom: 24px; }
+    .custom-msg-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: #7a5c0a; font-weight: 700; margin-bottom: 8px; }
+    .custom-msg-text { font-size: .95rem; color: #4a3820; line-height: 1.65; white-space: pre-wrap; }
+    .emergency-box { background: #fde8e8; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .contact-grid { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+    .contact-item { flex: 1; min-width: 200px; background: #f4faf7; border-radius: 10px; padding: 14px 16px; }
+    .contact-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: #6b8a72; font-weight: 600; margin-bottom: 4px; }
+    .contact-value { font-size: .9rem; color: #1a4a2e; font-weight: 500; }
+    .footer { background: #0d2b1a; padding: 24px 40px; text-align: center; }
+    .footer p { color: #6b8a72; font-size: .82rem; margin: 4px 0; }
+    .footer a { color: #56cc84; text-decoration: none; }
+    @media (max-width: 620px) {
+      .body { padding: 24px 20px; }
+      .header { padding: 28px 20px; }
+      .contact-grid { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">🌿</div>
+      <h1 class="header-title">Prithivi Pulse</h1>
+      <p class="header-sub">Environment Club · K.R. Mangalam University</p>
+      <div class="reminder-badge">🔔 Event Reminder</div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <p class="greeting">Hello, {{participantName}}! 🌱</p>
+      <p class="intro">
+        This is a friendly reminder about your upcoming participation in <strong>Prithivi Pulse</strong>.
+        We're looking forward to seeing you at the event!
+      </p>
+
+      <!-- Event Countdown -->
+      <div class="countdown-box">
+        <div class="countdown-label">🌟 You're registered for</div>
+        <div class="countdown-event">{{eventName}}</div>
+      </div>
+
+      <!-- Event Details -->
+      <div class="event-detail-box">
+        <div class="detail-row">
+          <div class="detail-icon">🏛️</div>
+          <div class="detail-text">
+            <strong>Venue</strong>
+            K.R. Mangalam University, Sohna Road, Gurugram – 122103
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">📋</div>
+          <div class="detail-text">
+            <strong>Registration ID</strong>
+            #PP-{{receiptNumber}}
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-icon">🎯</div>
+          <div class="detail-text">
+            <strong>Event Format</strong>
+            {{eventFormat}}
+          </div>
+        </div>
+      </div>
+
+      <!-- What to Bring -->
+      <div class="section-title">🎒 What to Bring</div>
+      <ul class="info-list">
+        {{whatToBring}}
+      </ul>
+
+      <!-- Check-in Instructions -->
+      <div class="section-title">✅ Check-in Instructions</div>
+      <ul class="info-list">
+        <li>Arrive <strong>30 minutes early</strong> for smooth check-in.</li>
+        <li>Carry your <strong>valid college ID card</strong>.</li>
+        <li>Quote your Receipt No. <strong>#PP-{{receiptNumber}}</strong> at the registration desk.</li>
+        <li>Keep this email handy as your proof of registration.</li>
+      </ul>
+
+      <!-- Custom Admin Message (shown only if provided) -->
+      {{#if customMessage}}
+      <div class="section-title">📢 Message from the Organizers</div>
+      <div class="custom-msg-box">
+        <div class="custom-msg-label">Admin Note</div>
+        <div class="custom-msg-text">{{customMessage}}</div>
+      </div>
+      {{/if}}
+
+      <!-- Emergency Contact -->
+      <div class="section-title">🚨 Emergency Contact</div>
+      <div class="emergency-box">
+        <p style="margin:0;font-size:.93rem;color:#7a1a1a;">
+          For any last-minute queries, call us: <strong>+91-0124-290 5054</strong><br />
+          Email: <strong>environmentclub@krmangalam.edu.in</strong>
+        </p>
+      </div>
+
+      <!-- Contact Grid -->
+      <div class="section-title">📞 Contact Us</div>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <div class="contact-label">📧 Email</div>
+          <div class="contact-value">environmentclub@krmangalam.edu.in</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">📞 Phone</div>
+          <div class="contact-value">+91-0124-290 5054</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">📸 Instagram</div>
+          <div class="contact-value">@environmentclub_krmu</div>
+        </div>
+      </div>
+
+      <p style="font-size:.88rem;color:#6b8a72;line-height:1.6;">
+        We can't wait to have you with us! Together let's create an impact for a greener future. 🌍
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2026 Prithivi Pulse · Environment Club · K.R. Mangalam University</p>
+      <p><a href="https://www.krmangalam.edu.in">www.krmangalam.edu.in</a></p>
+      <p style="margin-top:8px;font-size:.78rem;">This is an automated email. Please do not reply directly.</p>
+    </div>
+  </div>
+</body>
+</html>
