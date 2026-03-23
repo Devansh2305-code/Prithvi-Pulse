@@ -264,7 +264,7 @@
             <span class="fee-icon">💰</span>
             <div>
               <strong>Registration Fee: ₹50 per participant</strong>
-              <span>Pay via UPI QR code below after filling the form</span>
+              <span>A payment QR code will appear after you click Register</span>
             </div>
           </div>
 
@@ -302,42 +302,8 @@
               <input type="text" id="d-experience" placeholder="e.g. School level, inter-college, none – optional" />
             </div>
           </div>
-          <button type="submit" class="btn-submit">Register for Debate 🎙️</button>
+          <button type="submit" class="btn-submit" data-label="Register for Debate 🎙️">Register for Debate 🎙️</button>
         </form>
-
-        <!-- Payment Section -->
-        <div class="payment-section">
-          <div class="payment-section-title">
-            <span>💳</span>
-            <div>
-              <h4>Complete Your Payment</h4>
-              <p>Scan the QR code &amp; pay ₹50 to confirm registration</p>
-            </div>
-          </div>
-          <div class="payment-body">
-            <div class="qr-wrap">
-              <img src="payment_qr.png" alt="Payment QR Code" class="qr-image" />
-              <div class="qr-amount">₹50 — Debate Registration</div>
-              <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
-              <div class="qr-name">Devansh Jain (Paytm UPI)</div>
-            </div>
-            <div class="screenshot-wrap">
-              <label class="screenshot-label" for="d-payment-screenshot">
-                <span class="screenshot-icon">📤</span>
-                <strong>Upload Payment Screenshot</strong>
-                <span>JPG / PNG — max 5 MB</span>
-                <input type="file" id="d-payment-screenshot" accept="image/*" onchange="handlePaymentScreenshot(this, 'debate')" />
-              </label>
-              <div class="screenshot-preview-wrap hidden" id="d-screenshotPreviewWrap">
-                <img id="d-screenshotPreview" src="" alt="Payment screenshot preview" />
-              </div>
-              <div class="payment-status hidden" id="d-paymentStatus"></div>
-              <div class="payment-required-hint" id="d-paymentHint">
-                ⚠️ Upload payment screenshot to enable submission
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- PHOTOGRAPHY FORM -->
@@ -409,7 +375,7 @@
             <span class="fee-icon">💰</span>
             <div>
               <strong>Registration Fee: ₹50 per team</strong>
-              <span>Pay via UPI QR code below after filling the form</span>
+              <span>A payment QR code will appear after you click Register</span>
             </div>
           </div>
 
@@ -482,39 +448,8 @@
             </div>
           </div>
 
-          <button type="submit" class="btn-submit">Register for Poster Making 🖼️</button>
+          <button type="submit" class="btn-submit" data-label="Register for Poster Making 🖼️">Register for Poster Making 🖼️</button>
         </form>
-
-        <!-- Payment Section -->
-        <div class="payment-section" id="posterPaymentSection">
-          <div class="payment-section-title">
-            <span>💳</span>
-            <div>
-              <h4>Complete Your Payment</h4>
-              <p>Scan the QR code &amp; pay ₹50 to confirm registration</p>
-            </div>
-          </div>
-          <div class="payment-body">
-            <div class="qr-wrap">
-              <img src="payment_qr.png" alt="Payment QR Code – Devansh Jain" class="qr-image" id="qrDisplay" />
-              <div class="qr-amount">₹50 — Poster Making Registration</div>
-              <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
-              <div class="qr-name">Devansh Jain (Paytm UPI)</div>
-            </div>
-            <div class="screenshot-wrap">
-              <label class="screenshot-label" for="pm-payment-screenshot">
-                <span class="screenshot-icon">📤</span>
-                <strong>Upload Payment Screenshot</strong>
-                <span>JPG / PNG — max 5 MB</span>
-                <input type="file" id="pm-payment-screenshot" accept="image/*" onchange="handlePaymentScreenshot(this)" />
-              </label>
-              <div class="screenshot-preview-wrap hidden" id="screenshotPreviewWrap">
-                <img id="screenshotPreview" src="" alt="Payment screenshot preview" />
-              </div>
-              <div class="payment-status hidden" id="paymentStatus"></div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -629,6 +564,53 @@
       </div>
     </div>
   </section>
+
+  <!-- ───────── PAYMENT MODAL ───────── -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-box payment-modal-box">
+      <div class="payment-modal-header">
+        <div class="payment-modal-icon">💳</div>
+        <div class="payment-modal-header-text">
+          <h3 id="paymentModalTitle">Complete Your Payment</h3>
+          <p id="paymentModalSubtitle">Scan the QR code &amp; pay ₹50 to confirm registration</p>
+        </div>
+        <button class="payment-modal-close" onclick="closePaymentModal()" aria-label="Close payment modal">✕</button>
+      </div>
+      <div class="payment-modal-body">
+        <div class="qr-wrap">
+          <img src="payment_qr.png" alt="Payment QR Code" class="qr-image" />
+          <div class="qr-amount" id="paymentQrAmount">₹50 — Registration</div>
+          <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
+          <div class="qr-name">Devansh Jain (Paytm UPI)</div>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="payment-instructions">
+            <p>1️⃣ Scan QR code &amp; pay ₹50</p>
+            <p>2️⃣ Take a screenshot of your payment confirmation</p>
+            <p>3️⃣ Upload screenshot below to complete registration</p>
+          </div>
+          <label class="screenshot-label" for="modal-payment-screenshot">
+            <span class="screenshot-icon">📤</span>
+            <strong>Upload Payment Screenshot</strong>
+            <span>JPG / PNG — max 5 MB</span>
+            <input type="file" id="modal-payment-screenshot" accept="image/*" onchange="handleModalScreenshot(this)" />
+          </label>
+          <div class="screenshot-preview-wrap hidden" id="modal-screenshotPreviewWrap">
+            <img id="modal-screenshotPreview" src="" alt="Payment screenshot preview" />
+          </div>
+          <div class="payment-status hidden" id="modal-paymentStatus"></div>
+          <div class="payment-upi-input">
+            <label for="modal-payer-upi">Your UPI ID <span style="font-weight:400;color:var(--text-muted)">(optional — helps faster verification)</span></label>
+            <input type="text" id="modal-payer-upi" placeholder="e.g. yourname@upi or 9876543210@paytm" />
+          </div>
+          <button class="btn-submit" id="paymentSubmitBtn" onclick="verifyAndSubmit()" disabled>
+            Verify &amp; Complete Registration ✅
+          </button>
+          <p class="payment-note">⚠️ Your registration will be confirmed after admin verifies payment. You will receive confirmation via email.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
