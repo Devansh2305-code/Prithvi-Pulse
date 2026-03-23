@@ -25,6 +25,13 @@ const LS_KEYS = {
   poster:      'pp_poster',
 };
 
+// ─── Email Service API (Node.js / Express backend) ───────────────
+// Change to your deployed backend URL when hosting online.
+const EMAIL_API_URL = 'http://localhost:3001';
+// Admin secret must match ADMIN_SECRET in your .env file.
+// If left empty the server accepts all requests (dev mode).
+const ADMIN_API_SECRET = '';
+
 /* ════════════════════════════════════════════
    NAVBAR – scroll effect + hamburger
 ════════════════════════════════════════════ */
@@ -543,11 +550,15 @@ async function renderAdminDashboard() {
   const photoRegs  = mergeWithLocal(photoRes.data  || [], 'photography');
   const posterRegs = mergeWithLocal(posterRes.data  || [], 'poster');
 
+  const debateVerified = debateRegs.filter(r => r.payment_verified).length;
+  const posterVerified = posterRegs.filter(r => r.payment_verified).length;
+
   // Summary cards
   document.getElementById('adminSummary').innerHTML = `
     <div class="admin-stat">
       <div class="count">${debateRegs.length}</div>
       <div class="label">🎙️ Debate Registrations</div>
+      <div class="stat-meta">${debateVerified} verified</div>
     </div>
     <div class="admin-stat">
       <div class="count">${photoRegs.length}</div>
@@ -556,6 +567,7 @@ async function renderAdminDashboard() {
     <div class="admin-stat">
       <div class="count">${posterRegs.length}</div>
       <div class="label">🖼️ Poster Making Registrations</div>
+      <div class="stat-meta">${posterVerified} verified</div>
     </div>
   `;
 
@@ -563,6 +575,11 @@ async function renderAdminDashboard() {
   document.getElementById('admin-table-debate').innerHTML      = buildDebateTable(debateRegs);
   document.getElementById('admin-table-photography').innerHTML = buildPhotoTable(photoRegs);
   document.getElementById('admin-table-poster').innerHTML      = buildPosterTable(posterRegs);
+
+  // Attach reminder-modal openers (after tables are in DOM)
+  document.getElementById('admin-reminder-debate').onclick = () => openReminderModal('debate', debateRegs);
+  document.getElementById('admin-reminder-photography').onclick = () => openReminderModal('photography', photoRegs);
+  document.getElementById('admin-reminder-poster').onclick = () => openReminderModal('poster', posterRegs);
 }
 
 /** Merge Supabase rows with any localStorage fallback entries (avoid duplicates by name+email) */
@@ -611,7 +628,7 @@ function buildDebateTable(rows) {
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
       <th>University</th><th>Roll No.</th><th>Stance</th><th>Experience</th>
-      <th>Payment</th><th>UPI ID</th><th>Registered At</th>
+      <th>Payment</th><th>UPI ID</th><th>Registered At</th><th>Actions</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -626,6 +643,7 @@ function buildDebateTable(rows) {
         <td>${paymentBadge(r)}${r.payment_screenshot_url ? ` <a href="${esc(r.payment_screenshot_url)}" target="_blank" style="font-size:.78rem;color:var(--green-600)">View</a>` : ''}<br><small style="color:var(--text-muted);font-size:.72rem">${esc(r.payment_notes)}</small></td>
         <td>${esc(r.payment_upi_id)}</td>
         <td>${formatDate(r.registered_at)}</td>
+        <td class="admin-actions-cell">${adminActionButtons(r, 'debate')}</td>
       </tr>`).join('')}
     </tbody>
   </table>`;
@@ -636,7 +654,7 @@ function buildPhotoTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Registered At</th><th>Actions</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -649,6 +667,7 @@ function buildPhotoTable(rows) {
         <td>${esc(r.theme)}</td>
         <td>${esc(r.experience)}</td>
         <td>${formatDate(r.registered_at)}</td>
+        <td class="admin-actions-cell">${adminActionButtons(r, 'photography')}</td>
       </tr>`).join('')}
     </tbody>
   </table>`;
@@ -660,7 +679,7 @@ function buildPosterTable(rows) {
     <thead><tr>
       <th>#</th><th>Name</th><th>Type</th><th>Partner</th><th>Contact</th><th>Email</th>
       <th>University</th><th>Roll No.</th><th>Medium</th><th>Concept</th>
-      <th>Payment</th><th>UPI ID</th><th>Registered At</th>
+      <th>Payment</th><th>UPI ID</th><th>Registered At</th><th>Actions</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -677,9 +696,35 @@ function buildPosterTable(rows) {
         <td>${paymentBadge(r)}${r.payment_screenshot_url ? ` <a href="${esc(r.payment_screenshot_url)}" target="_blank" style="font-size:.78rem;color:var(--green-600)">View</a>` : ''}<br><small style="color:var(--text-muted);font-size:.72rem">${esc(r.payment_notes)}</small></td>
         <td>${esc(r.payment_upi_id)}</td>
         <td>${formatDate(r.registered_at)}</td>
+        <td class="admin-actions-cell">${adminActionButtons(r, 'poster')}</td>
       </tr>`).join('')}
     </tbody>
   </table>`;
+}
+
+/**
+ * Build HTML for action buttons in a registration row.
+ * Photography has no payment, so only shows resend-confirmation for it.
+ */
+function adminActionButtons(r, eventType) {
+  const regJson = encodeURIComponent(JSON.stringify(r));
+  let html = '';
+
+  // "Verify Payment" button – only for paid events with a screenshot
+  if (eventType !== 'photography' && r.payment_uploaded) {
+    html += `<button class="btn-admin-action btn-verify-pay" onclick="openAdminVerifyModal(decodeURIComponent('${regJson}'), '${eventType}')">
+      🔍 Verify Payment
+    </button>`;
+  }
+
+  // "Resend Confirmation" – shown if payment was verified
+  if (r.payment_verified || eventType === 'photography') {
+    html += `<button class="btn-admin-action btn-resend-confirm" onclick="resendConfirmationEmail(${r.id}, '${eventType}', this)">
+      📧 Resend Email
+    </button>`;
+  }
+
+  return html || '<span style="color:var(--text-muted);font-size:.8rem">—</span>';
 }
 
 function emptyState(msg) {
@@ -701,3 +746,346 @@ function esc(str) {
     if (e.key === 'Enter') adminLogin();
   });
 });
+
+/* ════════════════════════════════════════════
+   ADMIN – Payment Verification Modal
+════════════════════════════════════════════ */
+// State for the currently open admin verification modal
+let _adminVerifyReg      = null; // full registration object
+let _adminVerifyEventType = null;
+
+/**
+ * Open the admin payment verification modal for a given registration.
+ * `reg` is the full registration row from Supabase.
+ */
+function openAdminVerifyModal(regJson, eventType) {
+  const reg = typeof regJson === 'string' ? JSON.parse(regJson) : regJson;
+  _adminVerifyReg       = reg;
+  _adminVerifyEventType = eventType;
+
+  // Populate participant details
+  document.getElementById('avm-name').textContent       = esc(reg.name);
+  document.getElementById('avm-email').textContent      = esc(reg.email);
+  document.getElementById('avm-contact').textContent    = esc(reg.contact);
+  document.getElementById('avm-university').textContent = esc(reg.university);
+  document.getElementById('avm-rollno').textContent     = esc(reg.roll_no || reg.rollNo || '—');
+  document.getElementById('avm-event').textContent      =
+    eventType === 'debate' ? 'Debate Competition'
+    : eventType === 'poster' ? 'Poster Making'
+    : 'Nature Photography';
+
+  // Payment details
+  document.getElementById('avm-upi').textContent        = reg.payment_upi_id || '—';
+  document.getElementById('avm-timestamp').textContent  = reg.payment_timestamp ? formatDate(reg.payment_timestamp) : '—';
+  document.getElementById('avm-notes-display').textContent = reg.payment_notes || '—';
+
+  // Screenshot
+  const screenshotWrap = document.getElementById('avm-screenshot-wrap');
+  const screenshotImg  = document.getElementById('avm-screenshot-img');
+  const screenshotLink = document.getElementById('avm-screenshot-link');
+  const noScreenshot   = document.getElementById('avm-no-screenshot');
+  if (reg.payment_screenshot_url) {
+    screenshotImg.src   = reg.payment_screenshot_url;
+    screenshotLink.href = reg.payment_screenshot_url;
+    screenshotWrap.classList.remove('hidden');
+    noScreenshot.classList.add('hidden');
+  } else {
+    screenshotWrap.classList.add('hidden');
+    noScreenshot.classList.remove('hidden');
+  }
+
+  // Reset admin notes and status
+  document.getElementById('avm-admin-notes').value = '';
+  document.getElementById('avm-status').classList.add('hidden');
+
+  document.getElementById('adminVerifyModal').classList.add('active');
+}
+
+function closeAdminVerifyModal() {
+  document.getElementById('adminVerifyModal').classList.remove('active');
+  _adminVerifyReg       = null;
+  _adminVerifyEventType = null;
+}
+
+document.getElementById('adminVerifyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAdminVerifyModal();
+});
+
+/**
+ * Called by Approve / Reject buttons inside the admin verify modal.
+ * `approved` – true for approve, false for reject.
+ */
+async function submitAdminVerify(approved) {
+  if (!_adminVerifyReg || !_adminVerifyEventType) return;
+
+  const adminNotes   = document.getElementById('avm-admin-notes').value.trim();
+  const statusBox    = document.getElementById('avm-status');
+  const approvBtn    = document.getElementById('avm-approve-btn');
+  const rejectBtn    = document.getElementById('avm-reject-btn');
+
+  approvBtn.disabled = true;
+  rejectBtn.disabled = true;
+
+  statusBox.className   = 'avm-status avm-status--pending';
+  statusBox.textContent = '⏳ Processing…';
+  statusBox.classList.remove('hidden');
+
+  const regId     = _adminVerifyReg.id;
+  const eventType = _adminVerifyEventType;
+  const receiptNo = `${eventType.toUpperCase().slice(0, 3)}-${regId}`;
+
+  // ── 1. Update Supabase directly (anon client with UPDATE policy) ────────────
+  let dbOk = false;
+  try {
+    const updatePayload = {
+      payment_verified:              approved,
+      payment_notes:                 adminNotes || null,
+      verification_timestamp:        new Date().toISOString(),
+      verification_admin_notes:      adminNotes || null,
+      confirmation_receipt_number:   receiptNo,
+    };
+    if (approved) {
+      updatePayload.confirmation_email_sent_at = new Date().toISOString();
+    }
+    const { error } = await db
+      .from(TABLES[eventType])
+      .update(updatePayload)
+      .eq('id', regId);
+    if (error) throw error;
+    dbOk = true;
+  } catch (err) {
+    console.warn('Supabase update failed:', err.message);
+  }
+
+  // ── 2. Call backend email service ──────────────────────────────────────────
+  let emailOk = false;
+  try {
+    const resp = await fetch(`${EMAIL_API_URL}/api/admin/verify-payment`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':    'application/json',
+        'x-admin-secret':  ADMIN_API_SECRET,
+      },
+      body: JSON.stringify({
+        registrationId:   regId,
+        eventType,
+        approved,
+        notes:            adminNotes,
+        // Pass registration data as fallback when DB has no service key
+        registrationData: _adminVerifyReg,
+      }),
+    });
+    const result = await resp.json();
+    emailOk = result.success === true;
+    if (!emailOk) console.warn('Email API error:', result.error);
+  } catch (fetchErr) {
+    console.warn('Email service unreachable:', fetchErr.message);
+  }
+
+  // ── 3. Update UI ────────────────────────────────────────────────────────────
+  approvBtn.disabled = false;
+  rejectBtn.disabled = false;
+
+  if (dbOk && emailOk) {
+    statusBox.className   = 'avm-status avm-status--success';
+    statusBox.textContent = approved
+      ? '✅ Payment approved and confirmation email sent.'
+      : '❌ Payment rejected and rejection email sent.';
+  } else if (dbOk) {
+    statusBox.className   = 'avm-status avm-status--warn';
+    statusBox.textContent = approved
+      ? '✅ Payment approved in database. Email service unavailable — start the server to enable emails.'
+      : '❌ Payment rejected in database. Email service unavailable.';
+  } else {
+    statusBox.className   = 'avm-status avm-status--warn';
+    statusBox.textContent = '⚠️ Could not update database. Check Supabase UPDATE policy and try again.';
+  }
+
+  // Refresh admin dashboard table after a short delay
+  setTimeout(() => {
+    closeAdminVerifyModal();
+    renderAdminDashboard();
+  }, 2200);
+}
+
+/* ════════════════════════════════════════════
+   ADMIN – Reminder Email Modal
+════════════════════════════════════════════ */
+let _reminderEventType    = null;
+let _reminderRegistrations = []; // all verified registrations for the selected event
+
+// 24-hour cooldown tracking (keyed by "eventType:regId")
+const REMINDER_COOLDOWN_KEY = 'pp_reminder_cooldown';
+
+function getReminderCooldowns() {
+  try { return JSON.parse(localStorage.getItem(REMINDER_COOLDOWN_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function setReminderCooldown(eventType, regId) {
+  const cooldowns = getReminderCooldowns();
+  cooldowns[`${eventType}:${regId}`] = Date.now();
+  localStorage.setItem(REMINDER_COOLDOWN_KEY, JSON.stringify(cooldowns));
+}
+
+function isOnReminderCooldown(eventType, regId) {
+  const cooldowns = getReminderCooldowns();
+  const lastSent  = cooldowns[`${eventType}:${regId}`];
+  if (!lastSent) return false;
+  return (Date.now() - lastSent) < 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Open the reminder email modal for a specific event type.
+ * `regs` – array of registration rows already loaded in the admin dashboard.
+ */
+function openReminderModal(eventType, regs) {
+  _reminderEventType     = eventType;
+  _reminderRegistrations = regs || [];
+
+  const eventName = eventType === 'debate' ? 'Debate Competition'
+    : eventType === 'poster' ? 'Poster Making'
+    : 'Nature Photography';
+
+  document.getElementById('rm-event-name').textContent = eventName;
+
+  // Build recipient checkboxes
+  const listEl = document.getElementById('rm-recipient-list');
+  listEl.innerHTML = '';
+
+  if (!_reminderRegistrations.length) {
+    listEl.innerHTML = '<p style="color:var(--text-muted);font-size:.9rem">No registrations found.</p>';
+  } else {
+    _reminderRegistrations.forEach(r => {
+      const onCooldown = isOnReminderCooldown(eventType, r.id);
+      const label      = document.createElement('label');
+      label.className  = 'rm-recipient-row';
+      label.innerHTML  = `
+        <input type="checkbox" class="rm-chk" data-id="${r.id}" ${onCooldown ? 'disabled' : 'checked'} />
+        <span class="rm-recipient-name">${esc(r.name)}</span>
+        <span class="rm-recipient-email">${esc(r.email)}</span>
+        ${onCooldown ? '<span class="rm-cooldown-badge">Sent &lt;24h ago</span>' : ''}
+      `;
+      listEl.appendChild(label);
+    });
+  }
+
+  // Pre-fill default message
+  const defaultMsg = `Dear Participant,\n\nThis is a friendly reminder about the upcoming ${eventName} at Prithivi Pulse.\n\nPlease ensure you arrive 30 minutes before the event starts with your valid college ID.\n\nWe look forward to seeing you!\n\nBest regards,\nPrithivi Pulse Team`;
+  document.getElementById('rm-custom-message').value = defaultMsg;
+
+  document.getElementById('rm-status').classList.add('hidden');
+  document.getElementById('reminderModal').classList.add('active');
+}
+
+function closeReminderModal() {
+  document.getElementById('reminderModal').classList.remove('active');
+  _reminderEventType    = null;
+  _reminderRegistrations = [];
+}
+
+document.getElementById('reminderModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReminderModal();
+});
+
+/** Toggle all reminder recipient checkboxes */
+function toggleAllReminders(checked) {
+  document.querySelectorAll('.rm-chk:not(:disabled)').forEach(chk => {
+    chk.checked = checked;
+  });
+}
+
+/** Send reminder emails */
+async function sendReminderEmails() {
+  const customMessage = document.getElementById('rm-custom-message').value.trim();
+  const checkedBoxes  = Array.from(document.querySelectorAll('.rm-chk:checked'));
+  const selectedIds   = checkedBoxes.map(chk => parseInt(chk.dataset.id, 10));
+
+  const statusBox = document.getElementById('rm-status');
+  const sendBtn   = document.getElementById('rm-send-btn');
+
+  if (!selectedIds.length) {
+    statusBox.className   = 'rm-status rm-status--warn';
+    statusBox.textContent = '⚠️ Please select at least one recipient.';
+    statusBox.classList.remove('hidden');
+    return;
+  }
+
+  sendBtn.disabled     = true;
+  statusBox.className  = 'rm-status rm-status--pending';
+  statusBox.textContent = `⏳ Sending to ${selectedIds.length} recipient(s)…`;
+  statusBox.classList.remove('hidden');
+
+  try {
+    const resp = await fetch(`${EMAIL_API_URL}/api/admin/send-reminder`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'x-admin-secret': ADMIN_API_SECRET,
+      },
+      body: JSON.stringify({
+        registrationIds: selectedIds,
+        eventType:       _reminderEventType,
+        customMessage:   customMessage || '',
+      }),
+    });
+    const result = await resp.json();
+
+    if (result.success || result.sent > 0) {
+      // Mark cooldowns for sent registrations
+      (result.details?.sent || []).forEach(item => {
+        setReminderCooldown(_reminderEventType, item.id);
+      });
+
+      statusBox.className   = 'rm-status rm-status--success';
+      statusBox.textContent = `✅ Reminder sent to ${result.sent} participant(s).${result.failed > 0 ? ` ⚠️ ${result.failed} failed.` : ''}`;
+
+      // Update reminder_email_sent_at in Supabase for each sent ID
+      for (const item of (result.details?.sent || [])) {
+        try {
+          await db.from(TABLES[_reminderEventType])
+            .update({ reminder_email_sent_at: new Date().toISOString() })
+            .eq('id', item.id);
+        } catch (_) {}
+      }
+    } else {
+      statusBox.className   = 'rm-status rm-status--warn';
+      statusBox.textContent = '❌ Failed to send reminder emails. Is the email server running?';
+    }
+  } catch (err) {
+    statusBox.className   = 'rm-status rm-status--warn';
+    statusBox.textContent = `❌ Email service unreachable. Start the Node.js server (npm start) and try again.`;
+    console.warn('Reminder send error:', err.message);
+  }
+
+  sendBtn.disabled = false;
+}
+
+/* ════════════════════════════════════════════
+   ADMIN – Resend Confirmation Email
+════════════════════════════════════════════ */
+async function resendConfirmationEmail(regId, eventType, btn) {
+  if (!regId || !eventType) return;
+
+  const originalText = btn.textContent;
+  btn.disabled    = true;
+  btn.textContent = '⏳ Sending…';
+
+  try {
+    const resp = await fetch(`${EMAIL_API_URL}/api/admin/resend-confirmation`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'x-admin-secret': ADMIN_API_SECRET,
+      },
+      body: JSON.stringify({ registrationId: regId, eventType }),
+    });
+    const result = await resp.json();
+    btn.textContent = result.success ? '✅ Sent!' : '❌ Failed';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2500);
+  } catch (err) {
+    btn.textContent = '❌ Offline';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2500);
+    console.warn('Resend confirmation error:', err.message);
+  }
+}

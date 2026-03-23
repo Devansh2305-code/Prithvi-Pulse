@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS debate_registrations (
   payment_verified        BOOLEAN DEFAULT false,
   payment_screenshot_url  TEXT,
   payment_notes           TEXT,
+  verification_timestamp        TIMESTAMPTZ,
+  verification_admin_notes      TEXT,
+  confirmation_email_sent_at    TIMESTAMPTZ,
+  reminder_email_sent_at        TIMESTAMPTZ,
+  confirmation_receipt_number   TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -35,6 +40,9 @@ CREATE TABLE IF NOT EXISTS photography_registrations (
   camera          TEXT,
   theme           TEXT,
   experience      TEXT,
+  confirmation_email_sent_at    TIMESTAMPTZ,
+  reminder_email_sent_at        TIMESTAMPTZ,
+  confirmation_receipt_number   TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -57,6 +65,11 @@ CREATE TABLE IF NOT EXISTS poster_registrations (
   payment_verified        BOOLEAN DEFAULT false,
   payment_screenshot_url  TEXT,
   payment_notes           TEXT,
+  verification_timestamp        TIMESTAMPTZ,
+  verification_admin_notes      TEXT,
+  confirmation_email_sent_at    TIMESTAMPTZ,
+  reminder_email_sent_at        TIMESTAMPTZ,
+  confirmation_receipt_number   TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -93,6 +106,21 @@ CREATE POLICY "Allow public select - poster"
   ON poster_registrations FOR SELECT
   TO anon USING (true);
 
+-- Allow anon to UPDATE payment verification fields (admin dashboard)
+-- NOTE: The server-side service key bypasses RLS. These policies allow
+--       frontend-only deployments where the backend isn't running.
+CREATE POLICY "Allow public update - debate"
+  ON debate_registrations FOR UPDATE
+  TO anon USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow public update - photography"
+  ON photography_registrations FOR UPDATE
+  TO anon USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow public update - poster"
+  ON poster_registrations FOR UPDATE
+  TO anon USING (true) WITH CHECK (true);
+
 -- ─── 5. STORAGE BUCKET FOR PAYMENT SCREENSHOTS ──
 -- Run this to create the storage bucket (or create manually in Supabase Storage UI)
 INSERT INTO storage.buckets (id, name, public)
@@ -118,10 +146,18 @@ ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_timestamp     
 ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_verified       BOOLEAN DEFAULT false;
 ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url TEXT;
 ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_notes          TEXT;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS verification_timestamp       TIMESTAMPTZ;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS verification_admin_notes     TEXT;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at   TIMESTAMPTZ;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS reminder_email_sent_at       TIMESTAMPTZ;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_number  TEXT;
 
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS camera TEXT DEFAULT 'Not specified';
 -- Backfill any existing NULL values
 UPDATE photography_registrations SET camera = 'Not specified' WHERE camera IS NULL;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at   TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS reminder_email_sent_at       TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_number  TEXT;
 
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS participation_type      TEXT DEFAULT 'Solo';
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_name            TEXT;
@@ -132,6 +168,31 @@ ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_timestamp     
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_verified        BOOLEAN DEFAULT false;
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url  TEXT;
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_notes           TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS verification_timestamp       TIMESTAMPTZ;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS verification_admin_notes     TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at   TIMESTAMPTZ;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS reminder_email_sent_at       TIMESTAMPTZ;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_number  TEXT;
+
+-- Add UPDATE policies if they don't already exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'debate_registrations' AND policyname = 'Allow public update - debate'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Allow public update - debate" ON debate_registrations FOR UPDATE TO anon USING (true) WITH CHECK (true)';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'photography_registrations' AND policyname = 'Allow public update - photography'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Allow public update - photography" ON photography_registrations FOR UPDATE TO anon USING (true) WITH CHECK (true)';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'poster_registrations' AND policyname = 'Allow public update - poster'
+  ) THEN
+    EXECUTE 'CREATE POLICY "Allow public update - poster" ON poster_registrations FOR UPDATE TO anon USING (true) WITH CHECK (true)';
+  END IF;
+END $$;
 
 -- ═══════════════════════════════════════════════
 --  Done! Your tables are ready.
