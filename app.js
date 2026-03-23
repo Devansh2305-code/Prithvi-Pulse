@@ -139,148 +139,318 @@ function togglePartnerFields(radio) {
 }
 
 /* ════════════════════════════════════════════
-   PAYMENT SCREENSHOT HANDLER
+   PAYMENT MODAL – State & Constants
 ════════════════════════════════════════════ */
-const PAYMENT_INPUT_IDS = {
-  debate:      'd-payment-screenshot',
-  photography: 'p-payment-screenshot',
-  poster:      'pm-payment-screenshot',
-};
-const PAYMENT_PREFIX = { debate: 'd', photography: 'p', poster: 'pm' };
+const EXPECTED_UPI_ID    = '7678695012@ptyes';
+const PAYMENT_BUCKET     = 'payment-screenshots';
+const PAYMENT_AMOUNTS    = { debate: '₹50 — Debate Registration', poster: '₹50 — Poster Making Registration' };
+const MS_PER_MINUTE      = 60 * 1000;
+const PAYMENT_VERIFY_WINDOW_MS = 30 * MS_PER_MINUTE; // 30-minute tolerance window for screenshot timestamp
+// UPI ID format: local-part@psp  (letters, digits, dots, hyphens, underscores)
+const UPI_ID_REGEX       = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
 
-function handlePaymentScreenshot(input, eventType) {
-  const prefix      = PAYMENT_PREFIX[eventType] || 'pm';
+// Temporary state while payment modal is open
+let _pendingEventType = null;
+let _pendingFormData  = null;
+let _pendingFormEl    = null;
+let _pendingBtn       = null;
+let _registrationTime = null;
+let _screenshotFile   = null;
+
+/* ════════════════════════════════════════════
+   PAYMENT MODAL – Show / Close
+════════════════════════════════════════════ */
+function showPaymentModal(eventType, formData, formEl, btn) {
+  _pendingEventType  = eventType;
+  _pendingFormData   = formData;
+  _pendingFormEl     = formEl;
+  _pendingBtn        = btn;
+  _registrationTime  = Date.now();
+  _screenshotFile    = null;
+
+  // Reset modal UI
+  document.getElementById('modal-payment-screenshot').value = '';
+  document.getElementById('modal-screenshotPreviewWrap').classList.add('hidden');
+  document.getElementById('modal-screenshotPreview').src    = '';
+  document.getElementById('modal-paymentStatus').classList.add('hidden');
+  document.getElementById('modal-payer-upi').value          = '';
+  document.getElementById('paymentSubmitBtn').disabled      = true;
+
+  // Set event-specific text
+  document.getElementById('paymentQrAmount').textContent    = PAYMENT_AMOUNTS[eventType] || '₹50 — Registration';
+
+  document.getElementById('paymentModal').classList.add('active');
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').classList.remove('active');
+  // Re-enable the form submit button so user can try again
+  if (_pendingBtn) {
+    _pendingBtn.disabled    = false;
+    _pendingBtn.textContent = _pendingBtn.getAttribute('data-label') || 'Register';
+  }
+  _pendingEventType = null;
+  _pendingFormData  = null;
+  _pendingFormEl    = null;
+  _pendingBtn       = null;
+  _screenshotFile   = null;
+}
+
+// Close modal when clicking backdrop
+document.getElementById('paymentModal').addEventListener('click', function (e) {
+  if (e.target === this) closePaymentModal();
+});
+
+/* ════════════════════════════════════════════
+   PAYMENT MODAL – Screenshot Handler
+════════════════════════════════════════════ */
+function handleModalScreenshot(input) {
   const file        = input.files[0];
-  const previewWrap = document.getElementById(`${prefix}-screenshotPreviewWrap`);
-  const previewImg  = document.getElementById(`${prefix}-screenshotPreview`);
-  const statusBox   = document.getElementById(`${prefix}-paymentStatus`);
-  const hint        = document.getElementById(`${prefix}-paymentHint`);
-  const submitBtn   = document.getElementById(`${eventType}Form`)?.querySelector('.btn-submit')
-                   || document.getElementById(`${ eventType === 'debate' ? 'debateForm' : eventType === 'photography' ? 'photoForm' : 'posterForm' }`)?.querySelector('.btn-submit');
+  const previewWrap = document.getElementById('modal-screenshotPreviewWrap');
+  const previewImg  = document.getElementById('modal-screenshotPreview');
+  const statusBox   = document.getElementById('modal-paymentStatus');
+  const submitBtn   = document.getElementById('paymentSubmitBtn');
+
+  _screenshotFile = null;
+  submitBtn.disabled = true;
 
   if (!file) {
-    previewWrap?.classList.add('hidden');
-    statusBox?.classList.add('hidden');
-    if (hint) hint.style.display = '';
+    previewWrap.classList.add('hidden');
+    statusBox.classList.add('hidden');
     return;
   }
 
-  // Validate file size (5 MB max)
   if (file.size > 5 * 1024 * 1024) {
     statusBox.classList.remove('hidden');
     statusBox.className = 'payment-status payment-status--warn';
-    statusBox.innerHTML = '⚠️ File too large. Please upload an image under 5 MB.';
+    statusBox.textContent = '⚠️ File too large. Please upload an image under 5 MB.';
     input.value = '';
     return;
   }
 
-  // Show image preview
   const reader = new FileReader();
   reader.onload = (e) => {
     previewImg.src = e.target.result;
     previewWrap.classList.remove('hidden');
     statusBox.classList.remove('hidden');
     statusBox.className = 'payment-status payment-status--pending';
-    statusBox.innerHTML = '⏳ Screenshot uploaded — Admin will verify before confirming your registration.';
-    if (hint) hint.style.display = 'none';  // Hide the warning once uploaded
+    statusBox.textContent = '⏳ Screenshot uploaded — click "Verify & Complete Registration" to proceed.';
+    _screenshotFile    = file;
+    submitBtn.disabled = false;
   };
   reader.readAsDataURL(file);
 }
 
 /* ════════════════════════════════════════════
-   FORM SUBMISSION  →  Supabase INSERT
+   PAYMENT VERIFICATION
 ════════════════════════════════════════════ */
-async function handleSubmit(e, eventType) {
-  e.preventDefault();
+/**
+ * Validate the payment:
+ *  1. Screenshot must be uploaded
+ *  2. File last-modified time should be within PAYMENT_VERIFY_WINDOW_MS of registration time
+ *  3. If payer UPI ID entered, validate format and check against expected UPI
+ * Returns { verified: boolean, upiId: string, paymentTimestamp: string, notes: string }
+ */
+function verifyPayment(screenshotFile, payerUpi) {
+  const now  = Date.now();
+  const fileTime     = screenshotFile.lastModified || now;
+  const timeDiff     = Math.abs(now - fileTime);
+  const withinWindow = timeDiff <= PAYMENT_VERIFY_WINDOW_MS;
 
-  // —— Payment gate: block if no screenshot uploaded ——
-  const screenshotInput = document.getElementById(PAYMENT_INPUT_IDS[eventType]);
-  if (!screenshotInput || screenshotInput.files.length === 0) {
-    const prefix  = PAYMENT_PREFIX[eventType] || 'pm';
-    const hint    = document.getElementById(`${prefix}-paymentHint`);
-    const paySection = hint?.closest('.payment-section');
-    if (hint) { hint.style.color = '#b91c1c'; hint.style.fontWeight = '700'; }
-    if (paySection) {
-      paySection.style.border = '2px solid #f87171';
-      paySection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => { paySection.style.border = ''; }, 2500);
-    }
-    return;
+  const upiId    = (payerUpi || '').trim();
+  const upiValid = upiId.length === 0 || UPI_ID_REGEX.test(upiId);
+  const upiMatch = upiId === EXPECTED_UPI_ID;
+
+  const paymentTimestamp = new Date(fileTime).toISOString();
+
+  // Determine verification status and notes
+  let verified = false;
+  let notes    = '';
+
+  if (!upiValid) {
+    // Invalid UPI format – cannot verify, needs manual review
+    notes = `Invalid UPI ID format entered: "${upiId}". Manual verification needed.`;
+  } else if (!withinWindow) {
+    notes = `Screenshot timestamp is ${Math.round(timeDiff / MS_PER_MINUTE)} min away from registration time. Manual verification needed.`;
+  } else if (upiId.length > 0 && !upiMatch) {
+    notes = `Payer UPI (${upiId}) does not match expected UPI (${EXPECTED_UPI_ID}). Manual verification needed.`;
+  } else if (upiId.length > 0 && upiMatch) {
+    verified = true;
+    notes = 'UPI ID matches and screenshot is recent. Auto-verified.';
+  } else {
+    // Screenshot within window but no UPI provided – pending admin review
+    notes = 'Screenshot uploaded. Awaiting admin verification.';
   }
 
-  const btn = e.target.querySelector('.btn-submit');
-  btn.disabled = true;
-  btn.textContent = 'Submitting…';
+  return { verified, upiId: upiId || null, paymentTimestamp, notes };
+}
 
-  const data = buildRegistrationData(eventType);
-  if (!data) { btn.disabled = false; btn.textContent = 'Try Again'; return; }
+/* ════════════════════════════════════════════
+   VERIFY & SUBMIT (called from payment modal)
+════════════════════════════════════════════ */
+async function verifyAndSubmit() {
+  if (!_screenshotFile || !_pendingEventType || !_pendingFormData) return;
+
+  const submitBtn = document.getElementById('paymentSubmitBtn');
+  const statusBox = document.getElementById('modal-paymentStatus');
+  const payerUpi  = document.getElementById('modal-payer-upi').value;
+
+  submitBtn.disabled    = true;
+  submitBtn.textContent = 'Verifying…';
+
+  // Run payment verification
+  const { verified, upiId, paymentTimestamp, notes } = verifyPayment(_screenshotFile, payerUpi);
+
+  // Try to upload screenshot to Supabase Storage
+  let screenshotUrl = null;
+  try {
+    const ext      = _screenshotFile.name.split('.').pop() || 'jpg';
+    const uuid     = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const fileName = `${_pendingEventType}/${uuid}.${ext}`;
+    const { data: uploadData, error: uploadError } = await db.storage
+      .from(PAYMENT_BUCKET)
+      .upload(fileName, _screenshotFile, { cacheControl: '3600', upsert: false });
+    if (!uploadError && uploadData) {
+      const { data: urlData } = db.storage.from(PAYMENT_BUCKET).getPublicUrl(fileName);
+      screenshotUrl = urlData?.publicUrl || null;
+    }
+  } catch (_) {
+    // Storage upload failure is non-fatal
+  }
+
+  // Merge payment data into registration payload
+  const fullData = {
+    ..._pendingFormData,
+    payment_uploaded:        true,
+    payment_upi_id:          upiId,
+    payment_timestamp:       paymentTimestamp,
+    payment_verified:        verified,
+    payment_screenshot_url:  screenshotUrl,
+    payment_notes:           notes,
+  };
 
   let saved = false;
-
   try {
-    const { error } = await db.from(TABLES[eventType]).insert([data]);
+    const { error } = await db.from(TABLES[_pendingEventType]).insert([fullData]);
     if (error) throw error;
     saved = true;
   } catch (err) {
     console.warn('Supabase insert failed, falling back to localStorage:', err.message);
-    // localStorage fallback so registrations aren't lost if Supabase is unreachable
-    const existing = getLocalRegistrations(eventType);
-    existing.push({ ...data, id: Date.now() });
-    localStorage.setItem(LS_KEYS[eventType], JSON.stringify(existing));
+    const existing = getLocalRegistrations(_pendingEventType);
+    existing.push({ ...fullData, id: Date.now() });
+    localStorage.setItem(LS_KEYS[_pendingEventType], JSON.stringify(existing));
     saved = true;
   }
 
   if (saved) {
-    e.target.reset();
-    btn.disabled = false;
-    btn.textContent = btn.getAttribute('data-label') || 'Register';
-    showSuccessModal(eventType, data.name);
+    // Reset form
+    _pendingFormEl.reset();
+    if (_pendingBtn) {
+      _pendingBtn.disabled    = false;
+      _pendingBtn.textContent = _pendingBtn.getAttribute('data-label') || 'Register';
+    }
+
+    // Close payment modal
+    document.getElementById('paymentModal').classList.remove('active');
+
+    // Show success modal (with payment status context)
+    showSuccessModal(_pendingEventType, _pendingFormData.name, verified);
+
+    // Clear pending state
+    _pendingEventType = null;
+    _pendingFormData  = null;
+    _pendingFormEl    = null;
+    _pendingBtn       = null;
+    _screenshotFile   = null;
+  } else {
+    statusBox.classList.remove('hidden');
+    statusBox.className   = 'payment-status payment-status--warn';
+    statusBox.textContent = '❌ Registration failed. Please try again.';
+    submitBtn.disabled    = false;
+    submitBtn.textContent = 'Verify & Complete Registration ✅';
   }
+}
+
+/* ════════════════════════════════════════════
+   FORM SUBMISSION  →  Show Payment Modal (for paid events)
+                    →  Supabase INSERT (for free events)
+════════════════════════════════════════════ */
+async function handleSubmit(e, eventType) {
+  e.preventDefault();
+
+  const btn = e.target.querySelector('.btn-submit');
+  btn.disabled    = true;
+  btn.textContent = 'Processing…';
+
+  const data = buildRegistrationData(eventType);
+  if (!data) { btn.disabled = false; btn.textContent = 'Try Again'; return; }
+
+  // Photography is free – submit directly without payment modal
+  if (eventType === 'photography') {
+    let saved = false;
+    try {
+      const { error } = await db.from(TABLES[eventType]).insert([data]);
+      if (error) throw error;
+      saved = true;
+    } catch (err) {
+      console.warn('Supabase insert failed, falling back to localStorage:', err.message);
+      const existing = getLocalRegistrations(eventType);
+      existing.push({ ...data, id: Date.now() });
+      localStorage.setItem(LS_KEYS[eventType], JSON.stringify(existing));
+      saved = true;
+    }
+    if (saved) {
+      e.target.reset();
+      btn.disabled    = false;
+      btn.textContent = btn.getAttribute('data-label') || 'Register';
+      showSuccessModal(eventType, data.name, null);
+    }
+    return;
+  }
+
+  // Paid events (debate, poster) – show payment modal
+  showPaymentModal(eventType, data, e.target, btn);
 }
 
 /* ── Build payload objects for each event type ── */
 function buildRegistrationData(eventType) {
-  const ts = new Date().toISOString();
   if (eventType === 'debate') {
     return {
-      name:             cleanVal('d-name'),
-      contact:          cleanVal('d-contact'),
-      email:            cleanVal('d-email'),
-      university:       cleanVal('d-university'),
-      roll_no:          cleanVal('d-rollno'),
-      stance:           cleanVal('d-stance'),
-      experience:       cleanVal('d-experience') || null,
-      payment_uploaded: document.getElementById('d-payment-screenshot')?.files?.length > 0,
+      name:       cleanVal('d-name'),
+      contact:    cleanVal('d-contact'),
+      email:      cleanVal('d-email'),
+      university: cleanVal('d-university'),
+      roll_no:    cleanVal('d-rollno'),
+      stance:     cleanVal('d-stance'),
+      experience: cleanVal('d-experience') || null,
     };
   }
   if (eventType === 'photography') {
     return {
-      name:             cleanVal('p-name'),
-      contact:          cleanVal('p-contact'),
-      email:            cleanVal('p-email'),
-      university:       cleanVal('p-university'),
-      roll_no:          cleanVal('p-rollno'),
-      theme:            cleanVal('p-theme') || null,
-      experience:       cleanVal('p-experience') || null,
-      payment_uploaded: document.getElementById('p-payment-screenshot')?.files?.length > 0,
+      name:       cleanVal('p-name'),
+      contact:    cleanVal('p-contact'),
+      email:      cleanVal('p-email'),
+      university: cleanVal('p-university'),
+      roll_no:    cleanVal('p-rollno'),
+      theme:      cleanVal('p-theme') || null,
+      experience: cleanVal('p-experience') || null,
     };
   }
   if (eventType === 'poster') {
     const participationType = document.querySelector('input[name="pm-participation"]:checked')?.value || 'Solo';
-    const partnerName = participationType === 'Duo' ? (cleanVal('pm-partner-name') || null) : null;
+    const partnerName   = participationType === 'Duo' ? (cleanVal('pm-partner-name') || null) : null;
     const partnerRollNo = participationType === 'Duo' ? (cleanVal('pm-partner-rollno') || null) : null;
     return {
-      name:              cleanVal('pm-name'),
-      contact:           cleanVal('pm-contact'),
-      email:             cleanVal('pm-email'),
-      university:        cleanVal('pm-university'),
-      roll_no:           cleanVal('pm-rollno'),
-      medium:            cleanVal('pm-medium'),
-      concept:           cleanVal('pm-concept') || null,
+      name:               cleanVal('pm-name'),
+      contact:            cleanVal('pm-contact'),
+      email:              cleanVal('pm-email'),
+      university:         cleanVal('pm-university'),
+      roll_no:            cleanVal('pm-rollno'),
+      medium:             cleanVal('pm-medium'),
+      concept:            cleanVal('pm-concept') || null,
       participation_type: participationType,
-      partner_name:      partnerName,
-      partner_roll_no:   partnerRollNo,
-      payment_uploaded:  document.getElementById('pm-payment-screenshot')?.files?.length > 0,
+      partner_name:       partnerName,
+      partner_roll_no:    partnerRollNo,
     };
   }
   return null;
@@ -305,9 +475,15 @@ const MODAL_MESSAGES = {
   poster:      "You're registered for Poster Making! Get your creative juices flowing. See you there!",
 };
 
-function showSuccessModal(eventType, name) {
+function showSuccessModal(eventType, name, paymentVerified) {
   document.getElementById('modalTitle').textContent = `Welcome, ${name || 'Participant'}! 🎉`;
-  document.getElementById('modalMsg').textContent   = MODAL_MESSAGES[eventType];
+  let msg = MODAL_MESSAGES[eventType];
+  if (paymentVerified === true) {
+    msg += ' ✅ Payment verified automatically.';
+  } else if (paymentVerified === false) {
+    msg += ' ⏳ Your payment screenshot has been received and will be verified by our team shortly.';
+  }
+  document.getElementById('modalMsg').textContent = msg;
   document.getElementById('successModal').classList.add('active');
 }
 
@@ -419,12 +595,23 @@ function formatDate(ts) {
   catch { return ts; }
 }
 
+function paymentBadge(r) {
+  if (r.payment_verified === true) {
+    return `<span class="badge-stance badge-for">✅ Verified</span>`;
+  }
+  if (r.payment_uploaded) {
+    return `<span class="badge-stance badge-pending">⏳ Pending</span>`;
+  }
+  return `<span class="badge-stance badge-against">❌ None</span>`;
+}
+
 function buildDebateTable(rows) {
   if (!rows.length) return emptyState('No debate registrations yet.');
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Stance</th><th>Experience</th><th>Payment</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Stance</th><th>Experience</th>
+      <th>Payment</th><th>UPI ID</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -436,7 +623,8 @@ function buildDebateTable(rows) {
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${stanceBadge(r.stance)}</td>
         <td>${esc(r.experience)}</td>
-        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
+        <td>${paymentBadge(r)}${r.payment_screenshot_url ? ` <a href="${esc(r.payment_screenshot_url)}" target="_blank" style="font-size:.78rem;color:var(--green-600)">View</a>` : ''}<br><small style="color:var(--text-muted);font-size:.72rem">${esc(r.payment_notes)}</small></td>
+        <td>${esc(r.payment_upi_id)}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>
@@ -448,7 +636,7 @@ function buildPhotoTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Payment</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -460,7 +648,6 @@ function buildPhotoTable(rows) {
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${esc(r.theme)}</td>
         <td>${esc(r.experience)}</td>
-        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>
@@ -472,7 +659,8 @@ function buildPosterTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Type</th><th>Partner</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Medium</th><th>Concept</th><th>Payment</th><th>Registered At</th>
+      <th>University</th><th>Roll No.</th><th>Medium</th><th>Concept</th>
+      <th>Payment</th><th>UPI ID</th><th>Registered At</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -486,7 +674,8 @@ function buildPosterTable(rows) {
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${esc(r.medium)}</td>
         <td>${esc(r.concept)}</td>
-        <td>${r.payment_uploaded ? '<span class="badge-stance badge-for">✅ Uploaded</span>' : '<span class="badge-stance badge-against">❌ Pending</span>'}</td>
+        <td>${paymentBadge(r)}${r.payment_screenshot_url ? ` <a href="${esc(r.payment_screenshot_url)}" target="_blank" style="font-size:.78rem;color:var(--green-600)">View</a>` : ''}<br><small style="color:var(--text-muted);font-size:.72rem">${esc(r.payment_notes)}</small></td>
+        <td>${esc(r.payment_upi_id)}</td>
         <td>${formatDate(r.registered_at)}</td>
       </tr>`).join('')}
     </tbody>

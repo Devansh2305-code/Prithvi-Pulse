@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS debate_registrations (
   roll_no         TEXT NOT NULL,
   stance          TEXT NOT NULL,
   experience      TEXT,
+  payment_uploaded        BOOLEAN DEFAULT false,
+  payment_upi_id          TEXT,
+  payment_timestamp       TIMESTAMPTZ,
+  payment_verified        BOOLEAN DEFAULT false,
+  payment_screenshot_url  TEXT,
+  payment_notes           TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -26,7 +32,7 @@ CREATE TABLE IF NOT EXISTS photography_registrations (
   email           TEXT NOT NULL,
   university      TEXT NOT NULL,
   roll_no         TEXT NOT NULL,
-  camera          TEXT NOT NULL,
+  camera          TEXT,
   theme           TEXT,
   experience      TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
@@ -42,6 +48,15 @@ CREATE TABLE IF NOT EXISTS poster_registrations (
   roll_no         TEXT NOT NULL,
   medium          TEXT NOT NULL,
   concept         TEXT,
+  participation_type      TEXT DEFAULT 'Solo',
+  partner_name            TEXT,
+  partner_roll_no         TEXT,
+  payment_uploaded        BOOLEAN DEFAULT false,
+  payment_upi_id          TEXT,
+  payment_timestamp       TIMESTAMPTZ,
+  payment_verified        BOOLEAN DEFAULT false,
+  payment_screenshot_url  TEXT,
+  payment_notes           TEXT,
   registered_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -78,14 +93,47 @@ CREATE POLICY "Allow public select - poster"
   ON poster_registrations FOR SELECT
   TO anon USING (true);
 
+-- ─── 5. STORAGE BUCKET FOR PAYMENT SCREENSHOTS ──
+-- Run this to create the storage bucket (or create manually in Supabase Storage UI)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('payment-screenshots', 'payment-screenshots', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow anon to upload to payment-screenshots bucket
+CREATE POLICY IF NOT EXISTS "Allow public upload - payment screenshots"
+  ON storage.objects FOR INSERT
+  TO anon WITH CHECK (bucket_id = 'payment-screenshots');
+
+-- Allow anon to read from payment-screenshots bucket
+CREATE POLICY IF NOT EXISTS "Allow public read - payment screenshots"
+  ON storage.objects FOR SELECT
+  TO anon USING (bucket_id = 'payment-screenshots');
+
+-- ═══════════════════════════════════════════════
+--  MIGRATION – run if tables already exist
+-- ═══════════════════════════════════════════════
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_uploaded       BOOLEAN DEFAULT false;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_upi_id         TEXT;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_timestamp      TIMESTAMPTZ;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_verified       BOOLEAN DEFAULT false;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url TEXT;
+ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS payment_notes          TEXT;
+
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS camera TEXT DEFAULT 'Not specified';
+-- Backfill any existing NULL values
+UPDATE photography_registrations SET camera = 'Not specified' WHERE camera IS NULL;
+
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS participation_type      TEXT DEFAULT 'Solo';
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_name            TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_roll_no         TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_uploaded        BOOLEAN DEFAULT false;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_upi_id          TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_timestamp       TIMESTAMPTZ;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_verified        BOOLEAN DEFAULT false;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url  TEXT;
+ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_notes           TEXT;
+
 -- ═══════════════════════════════════════════════
 --  Done! Your tables are ready.
 --  Go back to the browser and test a registration.
 -- ═══════════════════════════════════════════════
-
--- ─── 5. POSTER TABLE – NEW COLUMNS (run once) ───
---  Run these if your poster_registrations table already exists
-ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS participation_type TEXT DEFAULT 'Solo';
-ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_name       TEXT;
-ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_roll_no    TEXT;
-ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS payment_uploaded   BOOLEAN DEFAULT false;
