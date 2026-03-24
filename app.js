@@ -477,9 +477,15 @@ function getLocalRegistrations(eventType) {
    SUCCESS MODAL
 ════════════════════════════════════════════ */
 const MODAL_MESSAGES = {
-  debate:      "You're registered for the Debate Competition! We'll confirm your stance and share topic details soon.",
-  photography: "You're registered for Nature Photography! Bring your best lens and let nature speak.",
-  poster:      "You're registered for Poster Making! Get your creative juices flowing. See you there!",
+  debate:      "You're registered for Green Vichaar Sabha: A debate competition! We'll confirm your stance and share topic details soon.",
+  photography: "You're registered for Dharti Lens: A nature photography competition! Bring your best lens and let nature speak.",
+  poster:      "You're registered for Green Canvas: a poster making competition! Get your creative juices flowing. See you there!",
+};
+
+const WHATSAPP_LINKS = {
+  debate:      'https://chat.whatsapp.com/D4JeWwV7mLG3H2Y5K58rUl',
+  photography: 'https://chat.whatsapp.com/DpvNYjtESfBIOcIIa73HwX',
+  poster:      'https://chat.whatsapp.com/CrNcags0xDeG0iJz4QK6Nk',
 };
 
 function showSuccessModal(eventType, name, paymentVerified) {
@@ -491,6 +497,22 @@ function showSuccessModal(eventType, name, paymentVerified) {
     msg += ' ⏳ Your payment screenshot has been received and will be verified by our team shortly.';
   }
   document.getElementById('modalMsg').textContent = msg;
+
+  // Show WhatsApp group link
+  const whatsappLink = WHATSAPP_LINKS[eventType];
+  let waEl = document.getElementById('modalWhatsapp');
+  if (whatsappLink) {
+    if (!waEl) {
+      waEl = document.createElement('p');
+      waEl.id = 'modalWhatsapp';
+      waEl.style.cssText = 'margin-top:14px;font-size:.95rem;';
+      document.getElementById('modalMsg').insertAdjacentElement('afterend', waEl);
+    }
+    waEl.innerHTML = `📲 Join our WhatsApp group for updates: <a href="${whatsappLink}" target="_blank" rel="noopener noreferrer" style="color:#3aaf6a;font-weight:600;word-break:break-all;">${whatsappLink}</a>`;
+  } else if (waEl) {
+    waEl.remove();
+  }
+
   document.getElementById('successModal').classList.add('active');
 }
 
@@ -770,9 +792,9 @@ function openAdminVerifyModal(regJson, eventType) {
   document.getElementById('avm-university').textContent = esc(reg.university);
   document.getElementById('avm-rollno').textContent     = esc(reg.roll_no || reg.rollNo || '—');
   document.getElementById('avm-event').textContent      =
-    eventType === 'debate' ? 'Debate Competition'
-    : eventType === 'poster' ? 'Poster Making'
-    : 'Nature Photography';
+    eventType === 'debate' ? 'Green Vichaar Sabha: A debate competition'
+    : eventType === 'poster' ? 'Green Canvas: a poster making competition'
+    : 'Dharti Lens: A nature photography competition';
 
   // Payment details
   document.getElementById('avm-upi').textContent        = reg.payment_upi_id || '—';
@@ -943,9 +965,9 @@ function openReminderModal(eventType, regs) {
   _reminderEventType     = eventType;
   _reminderRegistrations = regs || [];
 
-  const eventName = eventType === 'debate' ? 'Debate Competition'
-    : eventType === 'poster' ? 'Poster Making'
-    : 'Nature Photography';
+  const eventName = eventType === 'debate' ? 'Green Vichaar Sabha: A debate competition'
+    : eventType === 'poster' ? 'Green Canvas: a poster making competition'
+    : 'Dharti Lens: A nature photography competition';
 
   document.getElementById('rm-event-name').textContent = eventName;
 

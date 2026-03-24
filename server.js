@@ -82,9 +82,15 @@ function renderTemplate(html, data) {
 
 // ─── Event name display mapping ───────────────────────────────────────────────
 const EVENT_NAMES = {
-  debate:      'Debate Competition',
-  photography: 'Nature Photography',
-  poster:      'Poster Making',
+  debate:      'Green Vichaar Sabha: A debate competition',
+  photography: 'Dharti Lens: A nature photography competition',
+  poster:      'Green Canvas: a poster making competition',
+};
+
+const WHATSAPP_LINKS = {
+  debate:      'https://chat.whatsapp.com/D4JeWwV7mLG3H2Y5K58rUl',
+  photography: 'https://chat.whatsapp.com/DpvNYjtESfBIOcIIa73HwX',
+  poster:      'https://chat.whatsapp.com/CrNcags0xDeG0iJz4QK6Nk',
 };
 
 const EVENT_FORMATS = {
@@ -237,6 +243,7 @@ app.post('/api/admin/verify-payment', requireAdminSecret, async (req, res) => {
           : '—',
         eventFormat:      EVENT_FORMATS[eventType] || '',
         whatToBring:      WHAT_TO_BRING[eventType] || '<li>College ID card</li>',
+        whatsappLink:     WHATSAPP_LINKS[eventType] || '',
       });
 
       await transporter.sendMail({
@@ -333,6 +340,7 @@ app.post('/api/admin/send-reminder', requireAdminSecret, async (req, res) => {
         eventFormat:     EVENT_FORMATS[eventType] || '',
         whatToBring:     WHAT_TO_BRING[eventType] || '<li>College ID card</li>',
         customMessage:   safeText(customMessage || ''),
+        whatsappLink:    WHATSAPP_LINKS[eventType] || '',
       });
 
       await transporter.sendMail({
@@ -412,6 +420,7 @@ app.post('/api/admin/resend-confirmation', requireAdminSecret, async (req, res) 
         : '—',
       eventFormat:      EVENT_FORMATS[eventType] || '',
       whatToBring:      WHAT_TO_BRING[eventType] || '<li>College ID card</li>',
+      whatsappLink:     WHATSAPP_LINKS[eventType] || '',
     });
 
     await transporter.sendMail({
