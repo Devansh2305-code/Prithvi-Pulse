@@ -6,9 +6,10 @@
    Requires .env – copy .env.example and fill in values.
 
    Endpoints:
-     POST /api/admin/verify-payment     – Approve or reject a payment
-     POST /api/admin/send-reminder      – Send reminder to participants
-     POST /api/admin/resend-confirmation– Resend confirmation email
+     POST /api/admin/verify-payment        – Approve or reject a payment
+     POST /api/admin/send-reminder         – Send reminder to participants
+     POST /api/admin/resend-confirmation   – Resend confirmation email
+     POST /api/admin/delete-registration   – Delete a registration record
 ═══════════════════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -445,6 +446,38 @@ app.post('/api/admin/resend-confirmation', requireAdminSecret, async (req, res) 
     console.error('Resend confirmation error:', err.message);
     return res.status(500).json({ error: 'Failed to send email: ' + err.message });
   }
+});
+
+// ─── Delete Registration ──────────────────────────────────────────────────────
+app.post('/api/admin/delete-registration', requireAdminSecret, async (req, res) => {
+  const { registrationId, eventType } = req.body;
+
+  if (!registrationId || !eventType) {
+    return res.status(400).json({ error: 'Missing required fields: registrationId, eventType.' });
+  }
+  if (!TABLES[eventType]) {
+    return res.status(400).json({ error: `Unknown eventType: ${eventType}` });
+  }
+  if (!db) {
+    return res.status(503).json({ error: 'Database not configured.' });
+  }
+
+  const { data, error, count } = await db
+    .from(TABLES[eventType])
+    .delete()
+    .eq('id', registrationId)
+    .select('id');
+
+  if (error) {
+    console.error('DB delete error:', error.message);
+    return res.status(500).json({ error: 'Database delete failed: ' + error.message });
+  }
+
+  if (!data || data.length === 0) {
+    return res.status(404).json({ error: 'Registration not found.' });
+  }
+
+  res.json({ success: true, message: 'Registration deleted successfully.' });
 });
 
 // ─── Health check ─────────────────────────────────────────────────────────────

@@ -746,11 +746,76 @@ function adminActionButtons(r, eventType) {
     </button>`;
   }
 
+  // "Delete Registration" – always available for all events
+  html += `<button class="btn-admin-action btn-delete-reg" onclick="deleteRegistration(${r.id}, '${eventType}')">
+    🗑️ Delete
+  </button>`;
+
   return html || '<span style="color:var(--text-muted);font-size:.8rem">—</span>';
 }
 
 function emptyState(msg) {
   return `<div class="empty-state"><div class="empty-icon">🗂️</div><p>${msg}</p></div>`;
+}
+
+/* ════════════════════════════════════════════
+   ADMIN – Delete Registration
+════════════════════════════════════════════ */
+let _pendingDeleteId   = null;
+let _pendingDeleteType = null;
+
+function deleteRegistration(registrationId, eventType) {
+  _pendingDeleteId   = registrationId;
+  _pendingDeleteType = eventType;
+
+  const modal = document.getElementById('deleteConfirmModal');
+  modal.classList.add('active');
+
+  document.getElementById('deleteConfirmBtn').onclick = confirmDeleteRegistration;
+}
+
+function closeDeleteConfirmModal() {
+  document.getElementById('deleteConfirmModal').classList.remove('active');
+  _pendingDeleteId   = null;
+  _pendingDeleteType = null;
+}
+
+// Close modal when clicking backdrop
+document.getElementById('deleteConfirmModal').addEventListener('click', function (e) {
+  if (e.target === this) closeDeleteConfirmModal();
+});
+
+async function confirmDeleteRegistration() {
+  if (!_pendingDeleteId || !_pendingDeleteType) return;
+
+  const btn = document.getElementById('deleteConfirmBtn');
+  btn.disabled   = true;
+  btn.textContent = '⏳ Deleting…';
+
+  try {
+    const res = await fetch('/api/admin/delete-registration', {
+      method:  'POST',
+      headers: {
+        'Content-Type':    'application/json',
+        'x-admin-secret':  ADMIN_API_SECRET,
+      },
+      body: JSON.stringify({ registrationId: _pendingDeleteId, eventType: _pendingDeleteType }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert('❌ Delete failed: ' + (data.error || 'Unknown error'));
+    } else {
+      closeDeleteConfirmModal();
+      await renderAdminDashboard();
+    }
+  } catch (err) {
+    alert('❌ Network error: ' + err.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '🗑️ Delete';
+  }
 }
 
 function esc(str) {
