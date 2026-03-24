@@ -730,6 +730,25 @@
     </div>
   </div>
 
+  <!-- ───────── DELETE CONFIRMATION MODAL ───────── -->
+  <div class="modal-overlay" id="deleteConfirmModal">
+    <div class="modal-box" style="max-width:420px;text-align:center;">
+      <div class="modal-anim">⚠️</div>
+      <h3 style="margin-bottom:.5rem;">Delete Registration?</h3>
+      <p id="deleteConfirmMsg" style="color:var(--text-muted);margin-bottom:1.5rem;">
+        This action cannot be undone. The registration will be permanently removed from the database.
+      </p>
+      <div class="avm-actions" style="justify-content:center;gap:1rem;">
+        <button id="deleteConfirmBtn" class="btn-avm-reject" style="background:var(--red,#dc2626);color:#fff;border:none;">
+          🗑️ Delete
+        </button>
+        <button class="btn-avm-approve" onclick="closeDeleteConfirmModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

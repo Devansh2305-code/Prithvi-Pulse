@@ -822,6 +822,10 @@ a { text-decoration: none; color: inherit; }
   background: #e8f8ef; color: var(--green-700); border: 1.5px solid var(--green-500);
 }
 .btn-resend-confirm:hover { background: var(--green-500); color: #fff; }
+.btn-delete-reg {
+  background: #fef2f2; color: #b91c1c; border: 1.5px solid #fca5a5;
+}
+.btn-delete-reg:hover { background: #dc2626; color: #fff; }
 
 /* ────────────────────────────────────────
    ADMIN VERIFICATION MODAL (avm-)
