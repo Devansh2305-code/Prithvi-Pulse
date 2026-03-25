@@ -150,7 +150,7 @@ function togglePartnerFields(radio) {
 ════════════════════════════════════════════ */
 const EXPECTED_UPI_ID    = '7678695012@ptyes';
 const PAYMENT_BUCKET     = 'payment-screenshots';
-const PAYMENT_AMOUNTS    = { debate: '₹50 — Debate Registration', poster: '₹50 — Poster Making Registration' };
+const PAYMENT_AMOUNTS    = { debate: '₹50 — Debate Registration', photography: '₹50 — Photography Registration', poster: '₹50 — Poster Making Registration' };
 const MS_PER_MINUTE      = 60 * 1000;
 const PAYMENT_VERIFY_WINDOW_MS = 30 * MS_PER_MINUTE; // 30-minute tolerance window for screenshot timestamp
 // UPI ID format: local-part@psp  (letters, digits, dots, hyphens, underscores)
@@ -379,9 +379,48 @@ async function verifyAndSubmit() {
 }
 
 /* ════════════════════════════════════════════
-   FORM SUBMISSION  →  Show Payment Modal (for paid events)
-                    →  Supabase INSERT (for free events)
+   DUPLICATE EMAIL CHECK – query all 3 event tables
 ════════════════════════════════════════════ */
+const EVENT_DISPLAY_NAMES = {
+  debate:      'Green Vichaar Sabha (Debate)',
+  photography: 'Dharti Lens (Photography)',
+  poster:      'Green Canvas (Poster Making)',
+};
+
+/**
+ * Check whether an email is already registered in any of the 3 event tables.
+ * Returns { registered: false } or { registered: true, eventType, eventName }.
+ */
+async function checkEmailAlreadyRegistered(email) {
+  const normalised = email.trim().toLowerCase();
+  try {
+    const [debateRes, photoRes, posterRes] = await Promise.all([
+      db.from(TABLES.debate).select('id').ilike('email', normalised).limit(1),
+      db.from(TABLES.photography).select('id').ilike('email', normalised).limit(1),
+      db.from(TABLES.poster).select('id').ilike('email', normalised).limit(1),
+    ]);
+    if (debateRes.data && debateRes.data.length > 0) {
+      return { registered: true, eventType: 'debate', eventName: EVENT_DISPLAY_NAMES.debate };
+    }
+    if (photoRes.data && photoRes.data.length > 0) {
+      return { registered: true, eventType: 'photography', eventName: EVENT_DISPLAY_NAMES.photography };
+    }
+    if (posterRes.data && posterRes.data.length > 0) {
+      return { registered: true, eventType: 'poster', eventName: EVENT_DISPLAY_NAMES.poster };
+    }
+  } catch (err) {
+    // If the check fails (e.g. network issue) we allow submission and let the DB handle it
+    console.warn('Email duplicate check failed:', err.message);
+  }
+  return { registered: false };
+}
+
+/* ════════════════════════════════════════════
+   FORM SUBMISSION  →  Check duplicate email
+                    →  Show Payment Modal (all events require ₹50)
+════════════════════════════════════════════ */
+const EMAIL_INPUT_IDS = { debate: 'd-email', photography: 'p-email', poster: 'pm-email' };
+
 async function handleSubmit(e, eventType) {
   e.preventDefault();
 
@@ -392,30 +431,35 @@ async function handleSubmit(e, eventType) {
   const data = buildRegistrationData(eventType);
   if (!data) { btn.disabled = false; btn.textContent = 'Try Again'; return; }
 
-  // Photography is free – submit directly without payment modal
-  if (eventType === 'photography') {
-    let saved = false;
-    try {
-      const { error } = await db.from(TABLES[eventType]).insert([data]);
-      if (error) throw error;
-      saved = true;
-    } catch (err) {
-      console.warn('Supabase insert failed, falling back to localStorage:', err.message);
-      const existing = getLocalRegistrations(eventType);
-      existing.push({ ...data, id: Date.now() });
-      localStorage.setItem(LS_KEYS[eventType], JSON.stringify(existing));
-      saved = true;
+  // ── Check whether this email is already registered in any event ──
+  btn.textContent = 'Checking…';
+  const check = await checkEmailAlreadyRegistered(data.email);
+  if (check.registered) {
+    // Show inline error and re-enable button
+    btn.disabled    = false;
+    btn.textContent = btn.getAttribute('data-label') || 'Register';
+
+    // Find the email input in this form and show an error below it
+    const emailInput = document.getElementById(EMAIL_INPUT_IDS[eventType]);
+    let errEl = emailInput?.parentElement?.querySelector('.email-dup-error');
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.className = 'email-dup-error';
+      errEl.style.cssText = 'color:#c0392b;font-size:.85rem;margin-top:6px;font-weight:500;';
+      emailInput?.parentElement?.appendChild(errEl);
     }
-    if (saved) {
-      e.target.reset();
-      btn.disabled    = false;
-      btn.textContent = btn.getAttribute('data-label') || 'Register';
-      showSuccessModal(eventType, data.name, null);
-    }
+    errEl.textContent =
+      `⚠️ This email is already registered for ${check.eventName}. Each participant can only register for one event.`;
+    emailInput?.focus();
     return;
   }
 
-  // Paid events (debate, poster) – show payment modal
+  // Clear any previous duplicate error for this form
+  const emailInput = document.getElementById(EMAIL_INPUT_IDS[eventType]);
+  const prevErr = emailInput?.parentElement?.querySelector('.email-dup-error');
+  if (prevErr) prevErr.remove();
+
+  // All events require ₹50 payment – show payment modal
   showPaymentModal(eventType, data, e.target, btn);
 }
 
@@ -573,7 +617,21 @@ async function renderAdminDashboard() {
   const posterRegs = mergeWithLocal(posterRes.data  || [], 'poster');
 
   const debateVerified = debateRegs.filter(r => r.payment_verified).length;
+  const photoVerified  = photoRegs.filter(r => r.payment_verified).length;
   const posterVerified = posterRegs.filter(r => r.payment_verified).length;
+
+  // Detect emails registered in more than one event (policy violation)
+  const emailEventMap = new Map(); // email → [eventType, ...]
+  [
+    ...debateRegs.map(r => ({ email: r.email?.toLowerCase(), event: 'debate' })),
+    ...photoRegs.map(r => ({ email: r.email?.toLowerCase(), event: 'photography' })),
+    ...posterRegs.map(r => ({ email: r.email?.toLowerCase(), event: 'poster' })),
+  ].forEach(({ email, event }) => {
+    if (!email) return;
+    if (!emailEventMap.has(email)) emailEventMap.set(email, []);
+    emailEventMap.get(email).push(event);
+  });
+  const duplicateEmails = [...emailEventMap.entries()].filter(([, events]) => events.length > 1);
 
   // Summary cards
   document.getElementById('adminSummary').innerHTML = `
@@ -585,12 +643,26 @@ async function renderAdminDashboard() {
     <div class="admin-stat">
       <div class="count">${photoRegs.length}</div>
       <div class="label">📷 Photography Registrations</div>
+      <div class="stat-meta">${photoVerified} verified</div>
     </div>
     <div class="admin-stat">
       <div class="count">${posterRegs.length}</div>
       <div class="label">🖼️ Poster Making Registrations</div>
       <div class="stat-meta">${posterVerified} verified</div>
     </div>
+    ${duplicateEmails.length > 0 ? `
+    <div class="admin-stat admin-stat--warn" style="border-color:#e74c3c;background:rgba(231,76,60,.08);">
+      <div class="count" style="color:#c0392b;">${duplicateEmails.length}</div>
+      <div class="label">⚠️ Duplicate Email Violations</div>
+      <div class="stat-meta" style="color:#c0392b;">
+        ${duplicateEmails.map(([email, events]) => `${esc(email)} → ${events.map(e => EVENT_DISPLAY_NAMES[e] || e).join(', ')}`).join('<br>')}
+      </div>
+    </div>` : `
+    <div class="admin-stat admin-stat--ok" style="border-color:#27ae60;background:rgba(39,174,96,.08);">
+      <div class="count" style="color:#27ae60;">✓</div>
+      <div class="label">✅ No Duplicate Registrations</div>
+      <div class="stat-meta" style="color:#27ae60;">All emails registered for one event only</div>
+    </div>`}
   `;
 
   // Build tables
@@ -676,7 +748,8 @@ function buildPhotoTable(rows) {
   return `<table class="admin-table">
     <thead><tr>
       <th>#</th><th>Name</th><th>Contact</th><th>Email</th>
-      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th><th>Registered At</th><th>Actions</th>
+      <th>University</th><th>Roll No.</th><th>Theme</th><th>Experience</th>
+      <th>Payment</th><th>UPI ID</th><th>Registered At</th><th>Actions</th>
     </tr></thead>
     <tbody>
       ${rows.map((r, i) => `<tr>
@@ -688,6 +761,8 @@ function buildPhotoTable(rows) {
         <td>${esc(r.roll_no || r.rollNo)}</td>
         <td>${esc(r.theme)}</td>
         <td>${esc(r.experience)}</td>
+        <td>${paymentBadge(r)}${r.payment_screenshot_url ? ` <a href="${esc(r.payment_screenshot_url)}" target="_blank" style="font-size:.78rem;color:var(--green-600)">View</a>` : ''}<br><small style="color:var(--text-muted);font-size:.72rem">${esc(r.payment_notes)}</small></td>
+        <td>${esc(r.payment_upi_id)}</td>
         <td>${formatDate(r.registered_at)}</td>
         <td class="admin-actions-cell">${adminActionButtons(r, 'photography')}</td>
       </tr>`).join('')}
@@ -732,15 +807,15 @@ function adminActionButtons(r, eventType) {
   const regJson = encodeURIComponent(JSON.stringify(r));
   let html = '';
 
-  // "Verify Payment" button – only for paid events with a screenshot
-  if (eventType !== 'photography' && r.payment_uploaded) {
+  // "Verify Payment" button – for all events with a screenshot uploaded
+  if (r.payment_uploaded) {
     html += `<button class="btn-admin-action btn-verify-pay" onclick="openAdminVerifyModal(decodeURIComponent('${regJson}'), '${eventType}')">
       🔍 Verify Payment
     </button>`;
   }
 
   // "Resend Confirmation" – shown if payment was verified
-  if (r.payment_verified || eventType === 'photography') {
+  if (r.payment_verified) {
     html += `<button class="btn-admin-action btn-resend-confirm" onclick="resendConfirmationEmail(${r.id}, '${eventType}', this)">
       📧 Resend Email
     </button>`;
