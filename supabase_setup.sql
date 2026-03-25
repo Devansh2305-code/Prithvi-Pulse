@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS photography_registrations (
   camera          TEXT,
   theme           TEXT,
   experience      TEXT,
+  payment_uploaded        BOOLEAN DEFAULT false,
+  payment_upi_id          TEXT,
+  payment_timestamp       TIMESTAMPTZ,
+  payment_verified        BOOLEAN DEFAULT false,
+  payment_screenshot_url  TEXT,
+  payment_notes           TEXT,
+  verification_timestamp        TIMESTAMPTZ,
+  verification_admin_notes      TEXT,
   confirmation_email_sent_at    TIMESTAMPTZ,
   reminder_email_sent_at        TIMESTAMPTZ,
   confirmation_receipt_number   TEXT,
@@ -155,6 +163,14 @@ ALTER TABLE debate_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_n
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS camera TEXT DEFAULT 'Not specified';
 -- Backfill any existing NULL values
 UPDATE photography_registrations SET camera = 'Not specified' WHERE camera IS NULL;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_uploaded        BOOLEAN DEFAULT false;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_upi_id          TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_timestamp       TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_verified        BOOLEAN DEFAULT false;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url  TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_notes           TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS verification_timestamp       TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS verification_admin_notes     TEXT;
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at   TIMESTAMPTZ;
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS reminder_email_sent_at       TIMESTAMPTZ;
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_number  TEXT;
@@ -198,3 +214,50 @@ END $$;
 --  Done! Your tables are ready.
 --  Go back to the browser and test a registration.
 -- ═══════════════════════════════════════════════
+
+-- ═══════════════════════════════════════════════
+--  SINGLE-EVENT CONSTRAINT
+--  participant_master enforces that each email
+--  may only register for ONE event across all 3.
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS participant_master (
+  id           BIGSERIAL PRIMARY KEY,
+  email        TEXT NOT NULL,
+  event_type   TEXT NOT NULL CHECK (event_type IN ('debate', 'photography', 'poster')),
+  registered_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT participant_master_email_unique UNIQUE (email)
+);
+
+ALTER TABLE participant_master ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public insert - participant_master"
+  ON participant_master FOR INSERT
+  TO anon WITH CHECK (true);
+
+CREATE POLICY "Allow public select - participant_master"
+  ON participant_master FOR SELECT
+  TO anon USING (true);
+
+-- Migrate existing registrations into participant_master.
+-- Uses a single cross-table query to keep the EARLIEST registration
+-- when the same email appears in more than one event table.
+WITH all_regs AS (
+  SELECT LOWER(email) AS email, 'debate' AS event_type, registered_at
+  FROM debate_registrations WHERE email IS NOT NULL
+  UNION ALL
+  SELECT LOWER(email) AS email, 'photography' AS event_type, registered_at
+  FROM photography_registrations WHERE email IS NOT NULL
+  UNION ALL
+  SELECT LOWER(email) AS email, 'poster' AS event_type, registered_at
+  FROM poster_registrations WHERE email IS NOT NULL
+),
+ranked AS (
+  SELECT email, event_type, registered_at,
+         ROW_NUMBER() OVER (PARTITION BY email ORDER BY registered_at) AS rn
+  FROM all_regs
+)
+INSERT INTO participant_master (email, event_type, registered_at)
+SELECT email, event_type, registered_at
+FROM ranked
+WHERE rn = 1
+ON CONFLICT (email) DO NOTHING;
