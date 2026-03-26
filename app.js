@@ -336,46 +336,38 @@ async function verifyAndSubmit() {
     payment_notes:           notes,
   };
 
-  let saved = false;
   try {
     const { error } = await db.from(TABLES[_pendingEventType]).insert([fullData]);
     if (error) throw error;
-    saved = true;
   } catch (err) {
-    console.warn('Supabase insert failed, falling back to localStorage:', err.message);
-    const existing = getLocalRegistrations(_pendingEventType);
-    existing.push({ ...fullData, id: Date.now() });
-    localStorage.setItem(LS_KEYS[_pendingEventType], JSON.stringify(existing));
-    saved = true;
-  }
-
-  if (saved) {
-    // Reset form
-    _pendingFormEl.reset();
-    if (_pendingBtn) {
-      _pendingBtn.disabled    = false;
-      _pendingBtn.textContent = _pendingBtn.getAttribute('data-label') || 'Register';
-    }
-
-    // Close payment modal
-    document.getElementById('paymentModal').classList.remove('active');
-
-    // Show success modal (with payment status context)
-    showSuccessModal(_pendingEventType, _pendingFormData.name, verified);
-
-    // Clear pending state
-    _pendingEventType = null;
-    _pendingFormData  = null;
-    _pendingFormEl    = null;
-    _pendingBtn       = null;
-    _screenshotFile   = null;
-  } else {
+    console.error('Supabase insert failed:', err.message);
     statusBox.classList.remove('hidden');
     statusBox.className   = 'payment-status payment-status--warn';
-    statusBox.textContent = '❌ Registration failed. Please try again.';
+    statusBox.textContent = '❌ Registration failed. Please check your internet and try again.';
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Verify & Complete Registration ✅';
+    return;
   }
+
+  // Reset form
+  _pendingFormEl.reset();
+  if (_pendingBtn) {
+    _pendingBtn.disabled    = false;
+    _pendingBtn.textContent = _pendingBtn.getAttribute('data-label') || 'Register';
+  }
+
+  // Close payment modal
+  document.getElementById('paymentModal').classList.remove('active');
+
+  // Show success modal (with payment status context)
+  showSuccessModal(_pendingEventType, _pendingFormData.name, verified);
+
+  // Clear pending state
+  _pendingEventType = null;
+  _pendingFormData  = null;
+  _pendingFormEl    = null;
+  _pendingBtn       = null;
+  _screenshotFile   = null;
 }
 
 /* ════════════════════════════════════════════
@@ -394,24 +386,19 @@ async function handleSubmit(e, eventType) {
 
   // Photography is free – submit directly without payment modal
   if (eventType === 'photography') {
-    let saved = false;
     try {
       const { error } = await db.from(TABLES[eventType]).insert([data]);
       if (error) throw error;
-      saved = true;
     } catch (err) {
-      console.warn('Supabase insert failed, falling back to localStorage:', err.message);
-      const existing = getLocalRegistrations(eventType);
-      existing.push({ ...data, id: Date.now() });
-      localStorage.setItem(LS_KEYS[eventType], JSON.stringify(existing));
-      saved = true;
-    }
-    if (saved) {
-      e.target.reset();
+      console.error('Supabase insert failed:', err.message);
       btn.disabled    = false;
-      btn.textContent = btn.getAttribute('data-label') || 'Register';
-      showSuccessModal(eventType, data.name, null);
+      btn.textContent = '❌ Registration failed. Please try again.';
+      return;
     }
+    e.target.reset();
+    btn.disabled    = false;
+    btn.textContent = btn.getAttribute('data-label') || 'Register';
+    showSuccessModal(eventType, data.name, null);
     return;
   }
 
@@ -567,10 +554,10 @@ async function renderAdminDashboard() {
     db.from(TABLES.poster).select('*').order('registered_at', { ascending: false }),
   ]);
 
-  // Merge with any localStorage fallback records
-  const debateRegs = mergeWithLocal(debateRes.data || [], 'debate');
-  const photoRegs  = mergeWithLocal(photoRes.data  || [], 'photography');
-  const posterRegs = mergeWithLocal(posterRes.data  || [], 'poster');
+  // Use only Supabase data
+  const debateRegs = debateRes.data || [];
+  const photoRegs  = photoRes.data  || [];
+  const posterRegs = posterRes.data  || [];
 
   const debateVerified = debateRegs.filter(r => r.payment_verified).length;
   const posterVerified = posterRegs.filter(r => r.payment_verified).length;
@@ -602,16 +589,6 @@ async function renderAdminDashboard() {
   document.getElementById('admin-reminder-debate').onclick = () => openReminderModal('debate', debateRegs);
   document.getElementById('admin-reminder-photography').onclick = () => openReminderModal('photography', photoRegs);
   document.getElementById('admin-reminder-poster').onclick = () => openReminderModal('poster', posterRegs);
-}
-
-/** Merge Supabase rows with any localStorage fallback entries (avoid duplicates by name+email) */
-function mergeWithLocal(supabaseRows, eventType) {
-  const local = getLocalRegistrations(eventType);
-  if (!local.length) return supabaseRows;
-  // Only add local entries not already present in Supabase
-  const supabaseEmails = new Set(supabaseRows.map(r => r.email?.toLowerCase()));
-  const newLocal = local.filter(r => !supabaseEmails.has(r.email?.toLowerCase()));
-  return [...supabaseRows, ...newLocal.map(r => ({ ...r, registered_at: r.registeredAt || '—' }))];
 }
 
 /* ── Admin tab switching ── */
