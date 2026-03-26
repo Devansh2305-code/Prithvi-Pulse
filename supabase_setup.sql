@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS photography_registrations (
   camera          TEXT,
   theme           TEXT,
   experience      TEXT,
+  payment_uploaded        BOOLEAN DEFAULT false,
+  payment_upi_id          TEXT,
+  payment_timestamp       TIMESTAMPTZ,
+  payment_verified        BOOLEAN DEFAULT false,
+  payment_screenshot_url  TEXT,
+  payment_notes           TEXT,
+  verification_timestamp        TIMESTAMPTZ,
+  verification_admin_notes      TEXT,
   confirmation_email_sent_at    TIMESTAMPTZ,
   reminder_email_sent_at        TIMESTAMPTZ,
   confirmation_receipt_number   TEXT,
@@ -158,6 +166,14 @@ UPDATE photography_registrations SET camera = 'Not specified' WHERE camera IS NU
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at   TIMESTAMPTZ;
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS reminder_email_sent_at       TIMESTAMPTZ;
 ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS confirmation_receipt_number  TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_uploaded       BOOLEAN DEFAULT false;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_upi_id         TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_timestamp      TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_verified       BOOLEAN DEFAULT false;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_screenshot_url TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS payment_notes          TEXT;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS verification_timestamp       TIMESTAMPTZ;
+ALTER TABLE photography_registrations ADD COLUMN IF NOT EXISTS verification_admin_notes     TEXT;
 
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS participation_type      TEXT DEFAULT 'Solo';
 ALTER TABLE poster_registrations ADD COLUMN IF NOT EXISTS partner_name            TEXT;
