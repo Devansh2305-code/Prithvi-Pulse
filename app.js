@@ -33,8 +33,11 @@ const LS_KEYS = {
 };
 
 // ─── Email Service API (Node.js / Express backend) ───────────────
-// Change to your deployed backend URL when hosting online.
-const EMAIL_API_URL = 'http://localhost:3001';
+// Uses a relative path so it works in both development and production.
+// Override by setting window.EMAIL_API_URL before this script loads.
+const EMAIL_API_URL = (typeof window.EMAIL_API_URL !== 'undefined' && window.EMAIL_API_URL)
+  ? window.EMAIL_API_URL
+  : '';
 // Admin secret must match ADMIN_SECRET in your .env file.
 // If left empty the server accepts all requests (dev mode).
 const ADMIN_API_SECRET = '';
@@ -347,10 +350,32 @@ async function verifyAndSubmit() {
     const { error } = await db.from(TABLES[_pendingEventType]).insert([fullData]);
     if (error) throw error;
   } catch (err) {
-    console.error('Supabase insert failed:', err.message);
+    console.error('Supabase insert failed:', err.message, err);
+
+    let userMessage = '❌ Registration failed. Please try again.';
+
+    const msg = (err.message || '').toLowerCase();
+    const code = err.code || '';
+
+    if (msg.includes('failed to fetch') || msg.includes('networkerror') || msg.includes('network request failed') || err.name === 'TypeError') {
+      userMessage = '❌ Network error: unable to reach the registration server. Please check your internet connection and try again.';
+    } else if (msg.includes('cors') || msg.includes('cross-origin') || msg.includes('blocked by cors')) {
+      userMessage = '❌ Connection blocked (CORS). Please contact support or try again later.';
+    } else if (code === '23505' || msg.includes('duplicate') || msg.includes('already exists') || msg.includes('unique')) {
+      userMessage = `❌ You are already registered for ${EVENT_DISPLAY_NAMES[_pendingEventType] || 'this event'}. Duplicate registrations are not allowed.`;
+    } else if (code === '42501' || msg.includes('permission denied') || msg.includes('not authorized')) {
+      userMessage = '❌ Registration is currently disabled. Please contact the event organiser.';
+    } else if (code === '23503' || msg.includes('violates foreign key')) {
+      userMessage = '❌ Invalid registration data. Please refresh and try again.';
+    } else if (msg.includes('jwt') || msg.includes('token') || msg.includes('auth')) {
+      userMessage = '❌ Authentication error. Please refresh the page and try again.';
+    } else if (err.message) {
+      userMessage = `❌ Registration failed: ${err.message}`;
+    }
+
     statusBox.classList.remove('hidden');
     statusBox.className   = 'payment-status payment-status--warn';
-    statusBox.textContent = '❌ Registration failed. Please check your internet and try again.';
+    statusBox.textContent = userMessage;
     submitBtn.disabled    = false;
     submitBtn.textContent = 'Verify & Complete Registration ✅';
     return;
