@@ -18,6 +18,13 @@ const TABLES = {
   poster:      'poster_registrations',
 };
 
+// ─── Human-readable event names ──────────────
+const EVENT_DISPLAY_NAMES = {
+  debate:      'Green Vichaar Sabha: A debate competition',
+  photography: 'Dharti Lens: A nature photography competition',
+  poster:      'Green Canvas: a poster making competition',
+};
+
 // ─── localStorage fallback keys (used if Supabase unreachable) ───
 const LS_KEYS = {
   debate:      'pp_debate',
@@ -150,7 +157,7 @@ function togglePartnerFields(radio) {
 ════════════════════════════════════════════ */
 const EXPECTED_UPI_ID    = '7678695012@ptyes';
 const PAYMENT_BUCKET     = 'payment-screenshots';
-const PAYMENT_AMOUNTS    = { debate: '₹50 — Debate Registration', poster: '₹50 — Poster Making Registration' };
+const PAYMENT_AMOUNTS    = { debate: '₹50 — Debate Registration', photography: '₹50 — Photography Registration', poster: '₹50 — Poster Making Registration' };
 const MS_PER_MINUTE      = 60 * 1000;
 const PAYMENT_VERIFY_WINDOW_MS = 30 * MS_PER_MINUTE; // 30-minute tolerance window for screenshot timestamp
 // UPI ID format: local-part@psp  (letters, digits, dots, hyphens, underscores)
@@ -371,8 +378,44 @@ async function verifyAndSubmit() {
 }
 
 /* ════════════════════════════════════════════
-   FORM SUBMISSION  →  Show Payment Modal (for paid events)
-                    →  Supabase INSERT (for free events)
+   INLINE FORM ERROR DISPLAY
+════════════════════════════════════════════ */
+function showFormError(btn, message) {
+  const formWrap = btn.closest('form');
+  if (!formWrap) return;
+  let errEl = formWrap.querySelector('.form-error-msg');
+  if (!errEl) {
+    errEl = document.createElement('p');
+    errEl.className = 'form-error-msg';
+    errEl.style.cssText = 'color:#e74c3c;font-size:.9rem;margin:.75rem 0 0;text-align:center;font-weight:500;';
+    btn.insertAdjacentElement('afterend', errEl);
+  }
+  errEl.textContent = message;
+  setTimeout(() => { if (errEl.parentNode) errEl.remove(); }, 6000);
+}
+
+/* ════════════════════════════════════════════
+   DUPLICATE REGISTRATION CHECK
+════════════════════════════════════════════ */
+async function checkDuplicateRegistration(email) {
+  if (!email) return null;
+  const lowerEmail = email.toLowerCase().trim();
+  try {
+    const checks = await Promise.all(
+      Object.entries(TABLES).map(([type, table]) =>
+        db.from(table).select('id').ilike('email', lowerEmail).limit(1)
+          .then(({ data }) => (data && data.length > 0 ? EVENT_DISPLAY_NAMES[type] : null))
+      )
+    );
+    return checks.find(Boolean) || null;
+  } catch (err) {
+    console.error('Duplicate registration check failed:', err.message);
+    return null;
+  }
+}
+
+/* ════════════════════════════════════════════
+   FORM SUBMISSION  →  Show Payment Modal (for all events)
 ════════════════════════════════════════════ */
 async function handleSubmit(e, eventType) {
   e.preventDefault();
@@ -384,25 +427,16 @@ async function handleSubmit(e, eventType) {
   const data = buildRegistrationData(eventType);
   if (!data) { btn.disabled = false; btn.textContent = 'Try Again'; return; }
 
-  // Photography is free – submit directly without payment modal
-  if (eventType === 'photography') {
-    try {
-      const { error } = await db.from(TABLES[eventType]).insert([data]);
-      if (error) throw error;
-    } catch (err) {
-      console.error('Supabase insert failed:', err.message);
-      btn.disabled    = false;
-      btn.textContent = '❌ Registration failed. Please try again.';
-      return;
-    }
-    e.target.reset();
+  // Check for duplicate registration across all events
+  const dupCheck = await checkDuplicateRegistration(data.email);
+  if (dupCheck) {
     btn.disabled    = false;
     btn.textContent = btn.getAttribute('data-label') || 'Register';
-    showSuccessModal(eventType, data.name, null);
+    showFormError(btn, `⚠️ Already registered for "${dupCheck}". Only one event allowed.`);
     return;
   }
 
-  // Paid events (debate, poster) – show payment modal
+  // All events are paid – show payment modal
   showPaymentModal(eventType, data, e.target, btn);
 }
 
@@ -703,21 +737,20 @@ function buildPosterTable(rows) {
 
 /**
  * Build HTML for action buttons in a registration row.
- * Photography has no payment, so only shows resend-confirmation for it.
  */
 function adminActionButtons(r, eventType) {
   const regJson = encodeURIComponent(JSON.stringify(r));
   let html = '';
 
-  // "Verify Payment" button – only for paid events with a screenshot
-  if (eventType !== 'photography' && r.payment_uploaded) {
+  // "Verify Payment" button – shown for all paid events when screenshot is uploaded
+  if (r.payment_uploaded) {
     html += `<button class="btn-admin-action btn-verify-pay" onclick="openAdminVerifyModal(decodeURIComponent('${regJson}'), '${eventType}')">
       🔍 Verify Payment
     </button>`;
   }
 
   // "Resend Confirmation" – shown if payment was verified
-  if (r.payment_verified || eventType === 'photography') {
+  if (r.payment_verified) {
     html += `<button class="btn-admin-action btn-resend-confirm" onclick="resendConfirmationEmail(${r.id}, '${eventType}', this)">
       📧 Resend Email
     </button>`;
