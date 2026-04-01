@@ -62,6 +62,48 @@ createLeaves();
 createParticles();
 
 /* ════════════════════════════════════════════
+   REGISTRATION MODAL
+════════════════════════════════════════════ */
+// Replace the placeholder form IDs below with your actual Google Form embed URLs.
+const FORM_URLS = {
+  debate:  'https://docs.google.com/forms/d/e/YOUR_DEBATE_FORM_ID/viewform?embedded=true',
+  fashion: 'https://docs.google.com/forms/d/e/YOUR_FASHION_FORM_ID/viewform?embedded=true',
+  poster:  'https://docs.google.com/forms/d/e/YOUR_POSTER_FORM_ID/viewform?embedded=true',
+};
+
+const EVENT_TITLES = {
+  debate:  'Register – Green Vichaar Sabha',
+  fashion: 'Register – Nature on the Ramp',
+  poster:  'Register – Green Canvas',
+};
+
+const registerModal = document.getElementById('registerModal');
+const modalFrame    = document.getElementById('modalFrame');
+const modalTitle    = document.getElementById('modalTitle');
+const modalClose    = document.getElementById('modalClose');
+
+function openRegisterModal(eventType) {
+  modalTitle.textContent = EVENT_TITLES[eventType] || 'Register';
+  modalFrame.src = FORM_URLS[eventType] || '';
+  registerModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRegisterModal() {
+  registerModal.classList.remove('active');
+  modalFrame.src = '';
+  document.body.style.overflow = '';
+}
+
+modalClose.addEventListener('click', closeRegisterModal);
+registerModal.addEventListener('click', (e) => {
+  if (e.target === registerModal) closeRegisterModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeRegisterModal();
+});
+
+/* ════════════════════════════════════════════
    SCROLL REVEAL
 ════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {

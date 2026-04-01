@@ -172,6 +172,13 @@ a { text-decoration: none; color: inherit; }
   transition: var(--transition); display: inline-block;
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(58,175,106,.5); }
+.btn-download {
+  background: rgba(255,255,255,.15); color: var(--white); font-weight: 600;
+  font-size: 1rem; padding: 14px 32px; border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.45); cursor: pointer;
+  transition: var(--transition); display: inline-block;
+}
+.btn-download:hover { background: rgba(255,255,255,.25); border-color: var(--white); }
 .btn-outline {
   background: transparent; color: var(--white); font-weight: 600;
   font-size: 1rem; padding: 14px 32px; border-radius: 999px;
@@ -347,7 +354,7 @@ a { text-decoration: none; color: inherit; }
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
 }
 #eventDebate::before { background: linear-gradient(90deg, var(--green-500), var(--green-400)); }
-#eventPhoto::before  { background: linear-gradient(90deg, var(--gold-500), var(--gold-400)); }
+#eventFashion::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
 #eventPoster::before { background: linear-gradient(90deg, #7c5cbf, #a084e8); }
 .event-card:hover {
   transform: translateY(-8px); box-shadow: var(--shadow-lg);
@@ -357,7 +364,7 @@ a { text-decoration: none; color: inherit; }
   display: flex; align-items: center; justify-content: center;
 }
 .ei-debate { background: linear-gradient(135deg, #d4f7e2, #a8efbf); }
-.ei-photo  { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.ei-fashion { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
 .ei-poster { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
 .event-icon { font-size: 1.8rem; }
 .event-card h3 { font-size: 1.3rem; font-weight: 700; color: var(--green-900); }
@@ -372,8 +379,39 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 4px 16px rgba(58,175,106,.25);
 }
 .btn-event:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(58,175,106,.35); }
-#eventPhoto .btn-event { background: linear-gradient(135deg, var(--earth-700), var(--gold-500)); }
+#eventFashion .btn-event { background: linear-gradient(135deg, #be185d, #ec4899); box-shadow: 0 4px 16px rgba(236,72,153,.3); }
 #eventPoster .btn-event { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+
+/* ────────────────────────────────────────
+   REGISTRATION MODAL
+──────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+  background: var(--white); border-radius: var(--radius-lg);
+  width: min(760px, 100%); max-height: 90vh;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn .25s ease both;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px; border-bottom: 1px solid rgba(58,175,106,.15);
+  flex-shrink: 0;
+}
+.modal-title { font-size: 1.2rem; font-weight: 700; color: var(--green-900); }
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.6rem; line-height: 1; color: var(--text-muted);
+  padding: 2px 8px; border-radius: var(--radius-sm); transition: var(--transition);
+}
+.modal-close:hover { background: var(--green-100); color: var(--green-800); }
+.modal-iframe { flex: 1; width: 100%; min-height: 520px; border: none; display: block; }
 
 /* ────────────────────────────────────────
    CONTACT
