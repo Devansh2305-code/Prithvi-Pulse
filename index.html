@@ -9,8 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 <body>
 
@@ -28,9 +27,7 @@
         <li><a href="#about">About</a></li>
         <li><a href="#guest">Chief Guest</a></li>
         <li><a href="#events">Events</a></li>
-        <li><a href="#register">Register</a></li>
         <li><a href="#contact">Contact</a></li>
-        <li><a href="#admin" class="btn-admin" id="adminNavBtn">Admin</a></li>
       </ul>
       <button class="nav-hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -50,8 +47,8 @@
         Compete. Inspire. Conserve.
       </p>
       <div class="hero-cta">
-        <a href="#register" class="btn-primary">Register Now</a>
-        <a href="#events" class="btn-outline">Explore Events</a>
+        <a href="#events" class="btn-primary">Explore Events</a>
+        <a href="#contact" class="btn-outline">Contact Us</a>
       </div>
       <div class="hero-date-badge">
         <span class="date-icon">📅</span>
@@ -165,7 +162,6 @@
             <li>📌 Choose your stance: For or Against the topic</li>
             <li>📌 Topic will be shared on the day of the event</li>
           </ul>
-          <a href="#register" class="btn-event" onclick="selectEvent('debate')">Register for Debate</a>
         </div>
 
         <div class="event-card" id="eventPhoto">
@@ -178,9 +174,7 @@
             <li>📌 Individual participation</li>
             <li>📌 Submit your best nature photograph</li>
             <li>📌 Original, unmanipulated shots preferred</li>
-            <li>💰 Registration Fee: ₹50 per participant</li>
           </ul>
-          <a href="#register" class="btn-event" onclick="selectEvent('photography')">Register for Photography</a>
         </div>
 
         <div class="event-card" id="eventPoster">
@@ -193,241 +187,9 @@
             <li>📌 Solo or Duo participation</li>
             <li>📌 Theme: Environment &amp; Sustainability</li>
             <li>📌 Materials will be provided on-site</li>
-            <li>💰 Registration Fee: ₹50 per team</li>
           </ul>
-          <a href="#register" class="btn-event" onclick="selectEvent('poster')">Register for Poster Making</a>
         </div>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- ───────── REGISTRATION ───────── -->
-  <section class="register-section" id="register">
-    <div class="container">
-      <div class="section-tag">Registration</div>
-      <h2 class="section-title">Join the <em>Movement</em></h2>
-      <p class="section-desc">Fill in your details below and secure your spot at Prithivi Pulse.</p>
-
-      <!-- Event Selector Tabs -->
-      <div class="event-tabs">
-        <button class="event-tab active" id="tab-debate" onclick="switchTab('debate')">🎙️ Green Vichaar Sabha</button>
-        <button class="event-tab" id="tab-photography" onclick="switchTab('photography')">📷 Dharti Lens</button>
-        <button class="event-tab" id="tab-poster" onclick="switchTab('poster')">🖼️ Green Canvas</button>
-      </div>
-
-      <!-- DEBATE FORM -->
-      <div class="reg-form-wrap active" id="form-debate">
-        <form class="reg-form" id="debateForm" onsubmit="handleSubmit(event, 'debate')">
-          <div class="form-header fh-debate">
-            <span>🎙️</span>
-            <div>
-              <h3>Green Vichaar Sabha: A debate competition</h3>
-              <p>Complete the form to register for the debate</p>
-            </div>
-          </div>
-
-          <!-- Fee Notice -->
-          <div class="fee-notice">
-            <span class="fee-icon">💰</span>
-            <div>
-              <strong>Registration Fee: ₹50 per participant</strong>
-              <span>A payment QR code will appear after you click Register</span>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="d-name">Full Name <span class="req">*</span></label>
-              <input type="text" id="d-name" placeholder="Enter your full name" required />
-            </div>
-            <div class="form-group">
-              <label for="d-contact">Contact Number <span class="req">*</span></label>
-              <input type="tel" id="d-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
-            </div>
-            <div class="form-group">
-              <label for="d-email">Email Address <span class="req">*</span></label>
-              <input type="email" id="d-email" placeholder="yourname@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="d-university">University / College <span class="req">*</span></label>
-              <input type="text" id="d-university" placeholder="Name of your institution" required />
-            </div>
-            <div class="form-group">
-              <label for="d-rollno">Roll Number <span class="req">*</span></label>
-              <input type="text" id="d-rollno" placeholder="Your enrollment / roll number" required />
-            </div>
-            <div class="form-group">
-              <label for="d-stance">Debate Stance <span class="req">*</span></label>
-              <select id="d-stance" required>
-                <option value="" disabled selected>Choose your stance</option>
-                <option value="For the Topic">✅ In Favour of the Topic</option>
-                <option value="Against the Topic">❌ Against the Topic</option>
-              </select>
-            </div>
-            <div class="form-group full-width">
-              <label for="d-experience">Debate Experience</label>
-              <input type="text" id="d-experience" placeholder="e.g. School level, inter-college, none – optional" />
-            </div>
-          </div>
-          <button type="submit" class="btn-submit" data-label="Register for Debate 🎙️">Register for Debate 🎙️</button>
-        </form>
-      </div>
-
-      <!-- PHOTOGRAPHY FORM -->
-      <div class="reg-form-wrap" id="form-photography">
-        <form class="reg-form" id="photoForm" onsubmit="handleSubmit(event, 'photography')">
-          <div class="form-header fh-photo">
-            <span>📷</span>
-            <div>
-              <h3>Dharti Lens: A nature photography competition</h3>
-              <p>Complete the form to register for photography</p>
-            </div>
-          </div>
-
-          <!-- Fee Notice -->
-          <div class="fee-notice">
-            <span class="fee-icon">💰</span>
-            <div>
-              <strong>Registration Fee: ₹50 per participant</strong>
-              <span>A payment QR code will appear after you click Register</span>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="p-name">Full Name <span class="req">*</span></label>
-              <input type="text" id="p-name" placeholder="Enter your full name" required />
-            </div>
-            <div class="form-group">
-              <label for="p-contact">Contact Number <span class="req">*</span></label>
-              <input type="tel" id="p-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
-            </div>
-            <div class="form-group">
-              <label for="p-email">Email Address <span class="req">*</span></label>
-              <input type="email" id="p-email" placeholder="yourname@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="p-university">University / College <span class="req">*</span></label>
-              <input type="text" id="p-university" placeholder="Name of your institution" required />
-            </div>
-            <div class="form-group">
-              <label for="p-rollno">Roll Number <span class="req">*</span></label>
-              <input type="text" id="p-rollno" placeholder="Your enrollment / roll number" required />
-            </div>
-
-            <div class="form-group">
-              <label for="p-theme">Preferred Photography Theme</label>
-              <select id="p-theme">
-                <option value="" disabled selected>Select a theme (optional)</option>
-                <option value="Wildlife">Wildlife</option>
-                <option value="Flora">Flora &amp; Plants</option>
-                <option value="Landscapes">Landscapes</option>
-                <option value="Macro">Macro Nature</option>
-                <option value="Water Bodies">Water Bodies</option>
-                <option value="Sky & Clouds">Sky &amp; Clouds</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="p-experience">Photography Experience</label>
-              <input type="text" id="p-experience" placeholder="e.g. Hobbyist, 2 years, none – optional" />
-            </div>
-          </div>
-          <button type="submit" class="btn-submit" data-label="Register for Photography 📷">Register for Photography 📷</button>
-        </form>
-      </div>
-
-      <!-- POSTER MAKING FORM -->
-      <div class="reg-form-wrap" id="form-poster">
-        <form class="reg-form" id="posterForm" onsubmit="handleSubmit(event, 'poster')">
-          <div class="form-header fh-poster">
-            <span>🖼️</span>
-            <div>
-              <h3>Green Canvas: a poster making competition</h3>
-              <p>Complete the form to register for poster making</p>
-            </div>
-          </div>
-
-          <!-- Fee Notice -->
-          <div class="fee-notice">
-            <span class="fee-icon">💰</span>
-            <div>
-              <strong>Registration Fee: ₹50 per team</strong>
-              <span>A payment QR code will appear after you click Register</span>
-            </div>
-          </div>
-
-          <!-- Participation Type -->
-          <div class="participation-toggle">
-            <label class="toggle-label">Participation Type <span class="req">*</span></label>
-            <div class="toggle-pills">
-              <label class="pill-option">
-                <input type="radio" name="pm-participation" id="pm-solo" value="Solo" checked onchange="togglePartnerFields(this)" />
-                <span>👤 Solo</span>
-              </label>
-              <label class="pill-option">
-                <input type="radio" name="pm-participation" id="pm-duo" value="Duo" onchange="togglePartnerFields(this)" />
-                <span>👥 Duo</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="pm-name">Full Name <span class="req">*</span></label>
-              <input type="text" id="pm-name" placeholder="Enter your full name" required />
-            </div>
-            <div class="form-group">
-              <label for="pm-contact">Contact Number <span class="req">*</span></label>
-              <input type="tel" id="pm-contact" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required />
-            </div>
-            <div class="form-group">
-              <label for="pm-email">Email Address <span class="req">*</span></label>
-              <input type="email" id="pm-email" placeholder="yourname@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="pm-university">University / College <span class="req">*</span></label>
-              <input type="text" id="pm-university" placeholder="Name of your institution" required />
-            </div>
-            <div class="form-group">
-              <label for="pm-rollno">Roll Number <span class="req">*</span></label>
-              <input type="text" id="pm-rollno" placeholder="Your enrollment / roll number" required />
-            </div>
-            <div class="form-group">
-              <label for="pm-medium">Preferred Medium <span class="req">*</span></label>
-              <select id="pm-medium" required>
-                <option value="" disabled selected>Select medium</option>
-                <option value="Watercolour">Watercolour</option>
-                <option value="Acrylic">Acrylic Paint</option>
-                <option value="Sketch / Pencil">Sketch / Pencil</option>
-                <option value="Ink & Pen">Ink &amp; Pen</option>
-                <option value="Mixed Media">Mixed Media</option>
-                <option value="Digital">Digital Art</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="pm-concept">Poster Concept / Message</label>
-              <input type="text" id="pm-concept" placeholder="Brief idea of your poster – optional" />
-            </div>
-          </div>
-
-          <!-- Partner Fields (shown only for Duo) -->
-          <div class="partner-fields hidden" id="partnerFields">
-            <div class="partner-fields-title">👥 Partner Details</div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="pm-partner-name">Partner's Full Name <span class="req">*</span></label>
-                <input type="text" id="pm-partner-name" placeholder="Partner's full name" />
-              </div>
-              <div class="form-group">
-                <label for="pm-partner-rollno">Partner's Roll Number <span class="req">*</span></label>
-                <input type="text" id="pm-partner-rollno" placeholder="Partner's enrollment / roll number" />
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-submit" data-label="Register for Poster Making 🖼️">Register for Poster Making 🖼️</button>
-        </form>
       </div>
     </div>
   </section>
@@ -480,252 +242,6 @@
       <p class="footer-copy">© 2026 Prithivi Pulse. Made with ❤️ for the Planet.</p>
     </div>
   </footer>
-
-  <!-- ───────── SUCCESS MODAL ───────── -->
-  <div class="modal-overlay" id="successModal">
-    <div class="modal-box">
-      <div class="modal-anim">🌿</div>
-      <h3 id="modalTitle">Registration Successful!</h3>
-      <p id="modalMsg">Thank you for registering. We'll be in touch soon!</p>
-      <button class="btn-primary" onclick="closeModal()">Great, Thanks!</button>
-    </div>
-  </div>
-
-  <!-- ───────── ADMIN SECTION ───────── -->
-  <section class="admin-section" id="admin">
-    <div class="container">
-      <!-- Admin Login -->
-      <div id="adminLogin">
-        <div class="section-tag">Admin Access</div>
-        <h2 class="section-title">Admin <em>Dashboard</em></h2>
-        <div class="admin-login-box">
-          <div class="admin-login-icon">🔐</div>
-          <h3>Secure Admin Login</h3>
-          <p>Enter credentials to view event registrations</p>
-          <div class="form-group">
-            <label for="admin-user">Username</label>
-            <input type="text" id="admin-user" placeholder="Admin username" />
-          </div>
-          <div class="form-group">
-            <label for="admin-pass">Password</label>
-            <input type="password" id="admin-pass" placeholder="Admin password" />
-          </div>
-          <button class="btn-submit" onclick="adminLogin()">Login to Dashboard</button>
-
-        </div>
-      </div>
-
-      <!-- Admin Dashboard (hidden until login) -->
-      <div id="adminDashboard" class="hidden">
-        <div class="admin-dash-header">
-          <div>
-            <div class="section-tag">Event Dashboard</div>
-            <h2 class="section-title">Prithivi Pulse <em>Registrations</em></h2>
-          </div>
-          <button class="btn-outline" onclick="adminLogout()">Logout</button>
-        </div>
-
-        <!-- Summary Cards -->
-        <div class="admin-summary" id="adminSummary"></div>
-
-        <!-- Tabs -->
-        <div class="admin-tabs">
-          <button class="admin-tab active" id="atab-debate" onclick="switchAdminTab('debate')">🎙️ Debate</button>
-          <button class="admin-tab" id="atab-photography" onclick="switchAdminTab('photography')">📷 Photography</button>
-          <button class="admin-tab" id="atab-poster" onclick="switchAdminTab('poster')">🖼️ Poster Making</button>
-        </div>
-
-        <!-- Reminder Email Buttons (per tab) -->
-        <div class="admin-reminder-bar">
-          <span class="reminder-bar-label">📧 Send Reminder Email:</span>
-          <button class="btn-reminder" id="admin-reminder-debate">🎙️ Debate Participants</button>
-          <button class="btn-reminder" id="admin-reminder-photography">📷 Photography Participants</button>
-          <button class="btn-reminder" id="admin-reminder-poster">🖼️ Poster Participants</button>
-        </div>
-
-        <!-- Tables -->
-        <div id="admin-table-debate" class="admin-table-wrap"></div>
-        <div id="admin-table-photography" class="admin-table-wrap hidden"></div>
-        <div id="admin-table-poster" class="admin-table-wrap hidden"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ───────── PAYMENT MODAL ───────── -->
-  <div class="modal-overlay" id="paymentModal">
-    <div class="modal-box payment-modal-box">
-      <div class="payment-modal-header">
-        <div class="payment-modal-icon">💳</div>
-        <div class="payment-modal-header-text">
-          <h3 id="paymentModalTitle">Complete Your Payment</h3>
-          <p id="paymentModalSubtitle">Scan the QR code &amp; pay ₹50 to confirm registration</p>
-        </div>
-        <button class="payment-modal-close" onclick="closePaymentModal()" aria-label="Close payment modal">✕</button>
-      </div>
-      <div class="payment-modal-body">
-        <div class="qr-wrap">
-          <img src="payment_qr.png" alt="Payment QR Code" class="qr-image" />
-          <div class="qr-amount" id="paymentQrAmount">₹50 — Registration</div>
-          <div class="qr-upi-id">UPI ID: <strong>7678695012@ptyes</strong></div>
-          <div class="qr-name">Devansh Jain (Paytm UPI)</div>
-        </div>
-        <div class="screenshot-wrap">
-          <div class="payment-instructions">
-            <p>1️⃣ Scan QR code &amp; pay ₹50</p>
-            <p>2️⃣ Take a screenshot of your payment confirmation</p>
-            <p>3️⃣ Upload screenshot below to complete registration</p>
-          </div>
-          <label class="screenshot-label" for="modal-payment-screenshot">
-            <span class="screenshot-icon">📤</span>
-            <strong>Upload Payment Screenshot</strong>
-            <span>JPG / PNG — max 5 MB</span>
-            <input type="file" id="modal-payment-screenshot" accept="image/*" onchange="handleModalScreenshot(this)" />
-          </label>
-          <div class="screenshot-preview-wrap hidden" id="modal-screenshotPreviewWrap">
-            <img id="modal-screenshotPreview" src="" alt="Payment screenshot preview" />
-          </div>
-          <div class="payment-status hidden" id="modal-paymentStatus"></div>
-          <div class="payment-upi-input">
-            <label for="modal-payer-upi">Your UPI ID <span style="font-weight:400;color:var(--text-muted)">(optional — helps faster verification)</span></label>
-            <input type="text" id="modal-payer-upi" placeholder="e.g. yourname@upi or 9876543210@paytm" />
-          </div>
-          <button class="btn-submit" id="paymentSubmitBtn" onclick="verifyAndSubmit()" disabled>
-            Verify &amp; Complete Registration ✅
-          </button>
-          <p class="payment-note">⚠️ Your registration will be confirmed after admin verifies payment. You will receive confirmation via email.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ───────── ADMIN PAYMENT VERIFICATION MODAL ───────── -->
-  <div class="modal-overlay" id="adminVerifyModal">
-    <div class="modal-box avm-box">
-      <div class="avm-header">
-        <div class="avm-icon">🔍</div>
-        <div class="avm-header-text">
-          <h3>Verify Payment</h3>
-          <p id="avm-event">—</p>
-        </div>
-        <button class="payment-modal-close" onclick="closeAdminVerifyModal()" aria-label="Close">✕</button>
-      </div>
-
-      <div class="avm-body">
-        <!-- Participant Info -->
-        <div class="avm-section-title">👤 Participant Details</div>
-        <div class="avm-details-grid">
-          <div class="avm-detail-row"><span class="avm-label">Name</span><span class="avm-value" id="avm-name">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">Email</span><span class="avm-value" id="avm-email">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">Contact</span><span class="avm-value" id="avm-contact">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">University</span><span class="avm-value" id="avm-university">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">Roll No.</span><span class="avm-value" id="avm-rollno">—</span></div>
-        </div>
-
-        <!-- Payment Info -->
-        <div class="avm-section-title">💳 Payment Details</div>
-        <div class="avm-details-grid">
-          <div class="avm-detail-row"><span class="avm-label">UPI ID Used</span><span class="avm-value" id="avm-upi">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">Payment Time</span><span class="avm-value" id="avm-timestamp">—</span></div>
-          <div class="avm-detail-row"><span class="avm-label">System Notes</span><span class="avm-value" id="avm-notes-display">—</span></div>
-        </div>
-
-        <!-- Screenshot Preview -->
-        <div class="avm-section-title">📷 Payment Screenshot</div>
-        <div id="avm-screenshot-wrap" class="avm-screenshot-wrap hidden">
-          <a id="avm-screenshot-link" href="#" target="_blank" title="Click to enlarge">
-            <img id="avm-screenshot-img" src="" alt="Payment screenshot" class="avm-screenshot-img" />
-            <span class="avm-screenshot-hint">Click to open full size</span>
-          </a>
-        </div>
-        <p id="avm-no-screenshot" class="avm-no-screenshot">No screenshot uploaded.</p>
-
-        <!-- Admin Notes -->
-        <div class="avm-section-title">📝 Admin Notes</div>
-        <textarea id="avm-admin-notes" class="avm-admin-notes"
-          placeholder="Enter reason for approval or rejection (required for rejection)…" rows="3"></textarea>
-
-        <!-- Status -->
-        <div id="avm-status" class="avm-status hidden"></div>
-
-        <!-- Actions -->
-        <div class="avm-actions">
-          <button id="avm-approve-btn" class="btn-avm-approve" onclick="submitAdminVerify(true)">
-            ✅ Approve Payment
-          </button>
-          <button id="avm-reject-btn" class="btn-avm-reject" onclick="submitAdminVerify(false)">
-            ❌ Reject Payment
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ───────── ADMIN REMINDER EMAIL MODAL ───────── -->
-  <div class="modal-overlay" id="reminderModal">
-    <div class="modal-box rm-box">
-      <div class="avm-header">
-        <div class="avm-icon">📧</div>
-        <div class="avm-header-text">
-          <h3>Send Reminder Email</h3>
-          <p>Event: <strong id="rm-event-name">—</strong></p>
-        </div>
-        <button class="payment-modal-close" onclick="closeReminderModal()" aria-label="Close">✕</button>
-      </div>
-
-      <div class="avm-body">
-        <!-- Select Recipients -->
-        <div class="avm-section-title">👥 Select Recipients</div>
-        <div class="rm-select-all-row">
-          <label class="rm-select-all-label">
-            <input type="checkbox" checked onchange="toggleAllReminders(this.checked)" />
-            Select / Deselect All
-          </label>
-        </div>
-        <div id="rm-recipient-list" class="rm-recipient-list"></div>
-
-        <!-- Custom Message -->
-        <div class="avm-section-title">✏️ Email Message</div>
-        <textarea id="rm-custom-message" class="avm-admin-notes rm-message-area" rows="8"
-          placeholder="Write your custom reminder message here…"></textarea>
-
-        <!-- Status -->
-        <div id="rm-status" class="avm-status hidden"></div>
-
-        <!-- Actions -->
-        <div class="avm-actions">
-          <button id="rm-send-btn" class="btn-avm-approve" onclick="sendReminderEmails()">
-            📤 Send Reminder Emails
-          </button>
-          <button class="btn-avm-reject" onclick="closeReminderModal()">
-            Cancel
-          </button>
-        </div>
-
-        <p class="payment-note" style="margin-top:12px;">
-          ⚠️ Recipients who received a reminder within the last 24 hours are automatically disabled to prevent spam.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ───────── DELETE CONFIRMATION MODAL ───────── -->
-  <div class="modal-overlay" id="deleteConfirmModal">
-    <div class="modal-box" style="max-width:420px;text-align:center;">
-      <div class="modal-anim">⚠️</div>
-      <h3 style="margin-bottom:.5rem;">Delete Registration?</h3>
-      <p id="deleteConfirmMsg" style="color:var(--text-muted);margin-bottom:1.5rem;">
-        This action cannot be undone. The registration will be permanently removed from the database.
-      </p>
-      <div class="avm-actions" style="justify-content:center;gap:1rem;">
-        <button id="deleteConfirmBtn" class="btn-avm-reject" style="background:var(--red,#dc2626);color:#fff;border:none;">
-          🗑️ Delete
-        </button>
-        <button class="btn-avm-approve" onclick="closeDeleteConfirmModal()">
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
 
   <script src="app.js"></script>
 </body>
