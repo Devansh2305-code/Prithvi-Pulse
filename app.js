@@ -66,10 +66,10 @@ createParticles();
 ════════════════════════════════════════════ */
 // Replace the placeholder form IDs below with your actual Google Form embed URLs.
 const FORM_URLS = {
-  debate:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?usp=dialog',
-  fashion: 'https://docs.google.com/forms/d/e/1FAIpQLScPZJv5Iz9j0uzGd14oGlp_Ioq_4j5zMd_XmdGvI49Bf26jqw/viewform?usp=dialog',
-  poster:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?usp=dialog',
-};
+  debate:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?embedded=true',
+  fashion: 'https://docs.google.com/forms/d/e/1FAIpQLScPZJv5Iz9j0uzGd14oGlp_Ioq_4j5zMd_XmdGvI49Bf26jqw/viewform?embedded=true',
+  poster:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?embedded=true',
+};;
 
 const EVENT_TITLES = {
   debate:  'Register – Green Vichaar Sabha',
