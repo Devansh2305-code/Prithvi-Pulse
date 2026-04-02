@@ -66,9 +66,9 @@ createParticles();
 ════════════════════════════════════════════ */
 // Replace the placeholder form IDs below with your actual Google Form embed URLs.
 const FORM_URLS = {
-  debate:  'https://docs.google.com/forms/d/e/YOUR_DEBATE_FORM_ID/viewform?embedded=true',
-  fashion: 'https://docs.google.com/forms/d/e/YOUR_FASHION_FORM_ID/viewform?embedded=true',
-  poster:  'https://docs.google.com/forms/d/e/YOUR_POSTER_FORM_ID/viewform?embedded=true',
+  debate:  'https://docs.google.com/forms/d/e/1FAIpQLSe9uCVtqY79bSSGoRtObagwh4bHzZD2PZCK2G7q1a5LtvXJmA/viewform?usp=header',
+  fashion: 'https://docs.google.com/forms/d/e/1FAIpQLScPZJv5Iz9j0uzGd14oGlp_Ioq_4j5zMd_XmdGvI49Bf26jqw/viewform?usp=header',
+  poster:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?usp=header',
 };
 
 const EVENT_TITLES = {
