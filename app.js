@@ -69,12 +69,16 @@ const FORM_URLS = {
   debate:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?embedded=true',
   fashion: 'https://docs.google.com/forms/d/e/1FAIpQLScPZJv5Iz9j0uzGd14oGlp_Ioq_4j5zMd_XmdGvI49Bf26jqw/viewform?embedded=true',
   poster:  'https://docs.google.com/forms/d/e/1FAIpQLSdI5gLIoP7CciJbT-btP24wmg21gD8ZDRblBbyUCF1mUFNQOA/viewform?embedded=true',
+  nukkad:  'https://docs.google.com/forms/d/e/1FAIpQLSfrrpYOe-csuR-em78ALsBWMGyMx_KJ0S_uB68KI-92-lmoBw/viewform?embedded=true',
+  haat:    'https://docs.google.com/forms/d/e/1FAIpQLScZkJE4l3WHV4w3pXRVLBqjrsi6-PLf9hRCrRCDyvGnJ01ElQ/viewform?embedded=true',
 };;
 
 const EVENT_TITLES = {
   debate:  'Register – Green Vichaar Sabha',
   fashion: 'Register – Nature on the Ramp',
   poster:  'Register – Green Canvas',
+  nukkad:  'Register – Nukkad Natak',
+  haat:    'Register – Eco - Haat',
 };
 
 const registerModal = document.getElementById('registerModal');
