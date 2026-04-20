@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   PRITHIVI PULSE – Static File Server
+   PRITHVI PULSE – Static File Server
    Node.js / Express
 
    Start:  node server.js   (or: npm start)
@@ -29,5 +29,5 @@ app.get('/api/health', (req, res) => {
 // ─── Start Server ─────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || '3001', 10);
 app.listen(PORT, () => {
-  console.log(`\n🌿 Prithivi Pulse server running on http://localhost:${PORT}\n`);
+  console.log(`\n🌿 Prithvi Pulse server running on http://localhost:${PORT}\n`);
 });
