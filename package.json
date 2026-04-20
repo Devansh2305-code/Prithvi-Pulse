@@ -1,7 +1,7 @@
 {
   "name": "prithvi-pulse",
   "version": "1.0.0",
-  "description": "Prithivi Pulse – Environment Club Event Website",
+  "description": "Prithvi Pulse – Environment Club Event Website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
