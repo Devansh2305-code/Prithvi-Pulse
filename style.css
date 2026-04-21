@@ -23,6 +23,8 @@
   --text-dark: #0f1f14;
   --text-mid:  #2c4a35;
   --text-muted:#6b8a72;
+  --navbar-height: 70px;
+  --alert-height: 38px;
 
   --radius-sm: 10px;
   --radius-md: 18px;
@@ -87,7 +89,7 @@ a { text-decoration: none; color: inherit; }
 }
 .nav-inner {
   max-width: 1180px; margin: 0 auto; padding: 0 24px;
-  height: 70px; display: flex; align-items: center; justify-content: space-between;
+  height: var(--navbar-height); display: flex; align-items: center; justify-content: space-between;
 }
 .nav-brand { display: flex; align-items: center; gap: 12px; }
 .nav-logo { font-size: 1.5rem; }
@@ -116,20 +118,29 @@ a { text-decoration: none; color: inherit; }
    ALERT STRIP
 ──────────────────────────────────────── */
 .postponement-alert {
-  position: fixed; top: 70px; left: 0; right: 0; z-index: 99;
+  position: fixed; top: var(--navbar-height); left: 0; right: 0; z-index: 99;
+  min-height: var(--alert-height);
+  display: flex; align-items: center;
   background: #5b0f15;
   border-top: 1px solid rgba(255,255,255,.16);
   border-bottom: 1px solid rgba(0,0,0,.2);
   overflow: hidden;
 }
 .postponement-alert-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
   margin: 0;
-  padding: 8px 0;
+  white-space: nowrap;
+  animation: alertRun 18s linear infinite;
+}
+.postponement-alert-track span {
+  flex: 0 0 auto;
+  padding: 8px 28px;
   color: #ffe3e3;
   font-weight: 600;
   font-size: .9rem;
   letter-spacing: .01em;
-  width: 100%;
 }
 
 /* ────────────────────────────────────────
@@ -139,7 +150,7 @@ a { text-decoration: none; color: inherit; }
   min-height: 100vh;
   background: linear-gradient(150deg, var(--green-900) 0%, var(--green-800) 40%, #1e5c38 70%, var(--green-700) 100%);
   display: flex; align-items: center; position: relative; overflow: hidden;
-  padding: 150px 24px 60px;
+  padding: calc(var(--navbar-height) + var(--alert-height) + 40px) 24px 60px;
 }
 .hero-particles {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden;
@@ -548,6 +559,7 @@ a { text-decoration: none; color: inherit; }
 @keyframes bounce   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes scaleIn  { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes wobble   { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
+@keyframes alertRun { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 @keyframes floatLeaf {
   0%   { transform: translateY(100vh) rotate(0deg);   opacity: 0; }
   10%  { opacity: .4; }
@@ -567,10 +579,10 @@ a { text-decoration: none; color: inherit; }
   .events-grid  { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .nav-links { display: none; flex-direction: column; position: fixed; top: 110px; left: 0; right: 0; background: var(--green-900); padding: 20px; gap: 4px; }
+  .nav-links { display: none; flex-direction: column; position: fixed; top: calc(var(--navbar-height) + var(--alert-height)); left: 0; right: 0; background: var(--green-900); padding: 20px; gap: 4px; }
   .nav-links.open { display: flex; }
   .nav-hamburger { display: flex; }
-  .hero { padding: 170px 24px 80px; }
+  .hero { padding: calc(var(--navbar-height) + var(--alert-height) + 60px) 24px 80px; }
   .hero-visual { display: none; }
   .about-grid    { grid-template-columns: 1fr; }
   .events-grid   { grid-template-columns: 1fr; }
@@ -584,4 +596,9 @@ a { text-decoration: none; color: inherit; }
   .contact-grid { grid-template-columns: 1fr; }
   .about-stats  { flex-direction: column; }
   .hero-cta     { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .postponement-alert-track { animation: none; }
+  .postponement-alert-track span[aria-hidden='true'] { display: none; }
 }
