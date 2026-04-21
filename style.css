@@ -124,17 +124,12 @@ a { text-decoration: none; color: inherit; }
 }
 .postponement-alert-track {
   margin: 0;
-  white-space: nowrap;
   padding: 8px 0;
-  animation: alertRun 18s linear infinite;
-}
-.postponement-alert-track span {
-  display: inline-block;
   color: #ffe3e3;
   font-weight: 600;
   font-size: .9rem;
   letter-spacing: .01em;
-  padding: 0 22px;
+  width: 100%;
 }
 
 /* ────────────────────────────────────────
@@ -553,7 +548,6 @@ a { text-decoration: none; color: inherit; }
 @keyframes bounce   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes scaleIn  { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes wobble   { 0%,100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
-@keyframes alertRun { from { transform: translateX(-100%); } to { transform: translateX(0%); } }
 @keyframes floatLeaf {
   0%   { transform: translateY(100vh) rotate(0deg);   opacity: 0; }
   10%  { opacity: .4; }
